@@ -1,0 +1,1865 @@
+openapi: 3.0.3
+info:
+  title: Next-Event API
+  description: API REST para gerenciamento de usuários, certificados, relatórios e papéis (Coordenador, Tutor, Bolsista).
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Curso:
+      type: object
+      properties:
+        id:
+          type: string
+        nome:
+          type: string
+        descricao:
+          type: string
+        cargaHoraria:
+          type: integer
+        categoria:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - nome
+        - descricao
+        - cargaHoraria
+        - categoria
+    
+    Aluno:
+      type: object
+      properties:
+        id:
+          type: string
+        usuarioId:
+          type: string
+        cursoId:
+          type: string
+        tipoAcesso:
+          type: string
+          enum: [ACESSO_TUTOR, ACESSO_BOLSISTA]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        usuario:
+          $ref: '#/components/schemas/Usuario'
+        curso:
+          $ref: '#/components/schemas/Curso'
+      required:
+        - usuarioId
+        - cursoId
+        - tipoAcesso
+    
+    Usuario:
+      type: object
+      properties:
+        id:
+          type: string
+        nome:
+          type: string
+        email:
+          type: string
+        matricula:
+          type: string
+        cpf:
+          type: string
+        status:
+          type: string
+          enum: [ATIVO, INATIVO, PENDENTE]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    # Novos componentes para relatórios e bolsistas
+    RelatorioConsolidadoDTO:
+      type: object
+      properties:
+        periodo:
+          type: object
+          properties:
+            id:
+              type: string
+            nome:
+              type: string
+            dataInicio:
+              type: string
+              format: date-time
+            dataFim:
+              type: string
+              format: date-time
+        estatisticas:
+          type: object
+          properties:
+            totalAlunos:
+              type: integer
+            totalTutores:
+              type: integer
+            totalFormulariosAcompanhamento:
+              type: integer
+            totalAvaliacoesTutoria:
+              type: integer
+            totalCertificadosPendentes:
+              type: integer
+            totalCertificadosAprovados:
+              type: integer
+            totalCertificadosRejeitados:
+              type: integer
+        distribuicaoSatisfacao:
+          type: object
+          properties:
+            muitoInsatisfeito:
+              type: integer
+            insatisfeito:
+              type: integer
+            neutro:
+              type: integer
+            satisfeito:
+              type: integer
+            muitoSatisfeito:
+              type: integer
+        principaisDificuldades:
+          type: object
+          properties:
+            comunicacao:
+              type: integer
+            conteudo:
+              type: integer
+            metodologicas:
+              type: integer
+            recursos:
+              type: integer
+            outras:
+              type: integer
+        alunosPorTutor:
+          type: array
+          items:
+            type: object
+            properties:
+              tutorNome:
+                type: string
+              tutorEmail:
+                type: string
+              quantidadeAlunos:
+                type: integer
+              avaliacaoMedia:
+                type: number
+        certificadosPorCategoria:
+          type: array
+          items:
+            type: object
+            properties:
+              categoria:
+                type: string
+              total:
+                type: integer
+              aprovados:
+                type: integer
+              pendentes:
+                type: integer
+              rejeitados:
+                type: integer
+        formsAcompanhamentoPorMes:
+          type: array
+          items:
+            type: object
+            properties:
+              mes:
+                type: string
+              quantidade:
+                type: integer
+        geradoEm:
+          type: string
+          format: date-time
+        geradoPor:
+          type: string
+
+    BolsistaDataView:
+      type: object
+      properties:
+        alunos:
+          type: object
+          properties:
+            total:
+              type: integer
+            porCurso:
+              type: array
+              items:
+                type: object
+                properties:
+                  curso:
+                    type: string
+                  quantidade:
+                    type: integer
+            porTipo:
+              type: array
+              items:
+                type: object
+                properties:
+                  tipo:
+                    type: string
+                  quantidade:
+                    type: integer
+            registros:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  nome:
+                    type: string
+                  email:
+                    type: string
+                  matricula:
+                    type: string
+                  curso:
+                    type: string
+                  tipoAcesso:
+                    type: string
+                  ativo:
+                    type: boolean
+                  dataIngresso:
+                    type: string
+                    format: date-time
+
+    PeriodoTutoria:
+      type: object
+      properties:
+        id:
+          type: string
+        nome:
+          type: string
+        dataInicio:
+          type: string
+          format: date-time
+        dataFim:
+          type: string
+          format: date-time
+        ativo:
+          type: boolean
+        descricao:
+          type: string
+      required:
+        - nome
+        - dataInicio
+        - dataFim
+
+    CargaHorariaMinima:
+      type: object
+      properties:
+        id:
+          type: string
+        periodoId:
+          type: string
+        categoria:
+          type: string
+          enum: [EVENTOS, MONITORIA, ESTUDOS_INDIVIDUAIS]
+        horasMinimas:
+          type: integer
+        descricao:
+          type: string
+      required:
+        - periodoId
+        - categoria
+        - horasMinimas
+
+    AlocarTutorAluno:
+      type: object
+      properties:
+        id:
+          type: string
+        tutorId:
+          type: string
+        bolsistaId:
+          type: string
+        periodoId:
+          type: string
+        dataInicio:
+          type: string
+          format: date-time
+        dataFim:
+          type: string
+          format: date-time
+        ativo:
+          type: boolean
+      required:
+        - tutorId
+        - bolsistaId
+        - periodoId
+        - dataInicio
+
+
+paths:
+  /users/login:
+    post:
+      summary: Autentica usuário e retorna token JWT
+      tags: ["Autenticacao"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                senha:
+                  type: string
+              required:
+                - email
+                - senha
+      responses:
+        '200':
+          description: Login realizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    type: object
+        '401':
+          description: Credenciais inválidas
+
+  /users:
+    post:
+      summary: Cria um novo usuário
+      tags: ["Usuarios"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                email:
+                  type: string
+                senha:
+                  type: string
+                matricula:
+                  type: string
+                cpf:
+                  type: string
+                status:
+                  type: string
+                  enum: [ATIVO, INATIVO, PENDENTE]
+      responses:
+        '201':
+          description: Usuário criado com sucesso
+        '400':
+          description: Dados inválidos
+    get:
+      summary: Lista todos os usuários
+      tags: ["Usuarios"]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de usuários
+        '401':
+          description: Token não fornecido ou inválido
+        '403':
+          description: Acesso negado (apenas admins)
+
+  /users/{id}:
+    get:
+      summary: Busca usuário por ID
+      tags: ["Usuarios"]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Usuário encontrado
+        '404':
+          description: Usuário não encontrado
+    put:
+      summary: Atualiza usuário por ID
+      tags: ["Usuarios"]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                email:
+                  type: string
+                senha:
+                  type: string
+                matricula:
+                  type: string
+                cpf:
+                  type: string
+                status:
+                  type: string
+                  enum: [ATIVO, INATIVO, PENDENTE]
+      responses:
+        '200':
+          description: Usuário atualizado
+        '404':
+          description: Usuário não encontrado
+    delete:
+      summary: Remove usuário por ID
+      tags: ["Usuarios"]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Usuário removido
+        '404':
+          description: Usuário não encontrado
+  /users/coordenadores:
+    get:
+      summary: Lista todos os coordenadores
+      tags: ["Usuarios"]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de coordenadores
+  /users/tutores:
+    get:
+      summary: Lista todos os tutores
+      tags: ["Usuarios"]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de tutores
+  /users/bolsistas:
+    get:
+      summary: Lista todos os bolsistas
+      tags: ["Usuarios"]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de bolsistas
+  /coordenadores/{id}/certificados:
+    get:
+      summary: Lista certificados de um coordenador
+      tags: ["Certificados"]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de certificados
+  /tutores/{id}/certificados:
+    get:
+      summary: Lista certificados de um tutor
+      tags: ["Certificados"]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de certificados
+  /bolsistas/{id}/certificados:
+    get:
+      summary: Lista certificados de um bolsista
+      tags: ["Certificados"]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de certificados
+  /coordenadores/{id}/validar-certificado:
+    post:
+      summary: Coordenador valida certificado
+      tags: ["Certificados"]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                certificateId:
+                  type: string
+      responses:
+        '200':
+          description: Certificado validado
+  /tutores/{id}/emitir-certificado:
+    post:
+      summary: Tutor emite certificado
+      tags: ["Certificados"]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                certificateId:
+                  type: string
+      responses:
+        '200':
+          description: Certificado emitido
+  /bolsistas/{id}/solicitar-certificado:
+    post:
+      summary: Bolsista solicita certificado
+      tags: ["Certificados"]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                certificateId:
+                  type: string
+      responses:
+        '200':
+          description: Certificado solicitado
+  /users/{id}/atribuir-papel:
+    patch:
+      summary: Atribui ou remove papel de usuário
+      tags: ["Usuarios"]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                papel:
+                  type: string
+      responses:
+        '200':
+          description: Papel atribuído/removido
+  /coordenadores/{id}/relatorios:
+    get:
+      summary: Lista relatórios sob responsabilidade do coordenador
+      tags: [Relatórios]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de relatórios
+  /tutores/{id}/relatorios:
+    get:
+      summary: Lista relatórios sob responsabilidade do tutor
+      tags: [Relatórios]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de relatórios
+  /bolsistas/{id}/relatorios:
+    get:
+      summary: Lista relatórios sob responsabilidade do bolsista
+      tags: [Relatórios]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de relatórios
+
+  # ROTAS `/api/bolsistas` (montadas em /api/bolsistas no servidor)
+  /bolsistas/dashboard:
+    get:
+      summary: Obter dados do dashboard para bolsista
+      tags: [Bolsista]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Dados do dashboard carregados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BolsistaDataView'
+        '401':
+          description: Token de autenticação inválido
+        '403':
+          description: Usuário não tem permissão de bolsista
+        '500':
+          description: Erro interno do servidor
+
+  /bolsistas/alunos:
+    get:
+      summary: Visualizar registros de alunos para bolsista
+      tags: [Bolsista]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Registros de alunos carregados com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Token de autenticação inválido
+        '403':
+          description: Usuário não tem permissão de bolsista
+        '500':
+          description: Erro interno do servidor
+
+  /bolsistas/tutores:
+    get:
+      summary: Visualizar registros de tutores para bolsista
+      tags: [Bolsista]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Registros de tutores carregados com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Token de autenticação inválido
+        '403':
+          description: Usuário não tem permissão de bolsista
+        '500':
+          description: Erro interno do servidor
+
+  /bolsistas/certificados:
+    get:
+      summary: Visualizar dados de certificados para bolsista
+      tags: [Bolsista]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Dados de certificados carregados com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Token de autenticação inválido
+        '403':
+          description: Usuário não tem permissão de bolsista
+        '500':
+          description: Erro interno do servidor
+
+  /bolsistas/forms-acompanhamento:
+    get:
+      summary: Visualizar formulários de acompanhamento para bolsista
+      tags: [Bolsista]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Dados de formulários carregados com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Token de autenticação inválido
+        '403':
+          description: Usuário não tem permissão de bolsista
+        '500':
+          description: Erro interno do servidor
+
+  /bolsistas/relatorio-consolidado:
+    post:
+      summary: Gerar relatório consolidado (para bolsista)
+      tags: [Bolsista]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                periodoId:
+                  type: string
+                  description: ID do período específico (opcional)
+                dataInicio:
+                  type: string
+                  format: date
+                  description: Data de início para análise (opcional)
+                dataFim:
+                  type: string
+                  format: date
+                  description: Data de fim para análise (opcional)
+                incluirDetalhes:
+                  type: boolean
+                  description: Se deve incluir detalhes no relatório
+      responses:
+        '200':
+          description: Relatório consolidado gerado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelatorioConsolidadoDTO'
+        '400':
+          description: Parâmetros inválidos
+        '401':
+          description: Token de autenticação inválido
+        '403':
+          description: Usuário não tem permissão de bolsista
+        '500':
+          description: Erro interno do servidor
+
+  # MÓDULO CURSO
+  # ROTAS `/api/certificates` (endpoints de upload, listagem e download)
+  /certificates/upload:
+    post:
+      summary: Upload de certificado (arquivo PDF)
+      tags: [Certificados]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Upload realizado com sucesso
+        '400':
+          description: Arquivo inválido
+        '401':
+          description: Token de autenticação inválido
+
+  /certificates:
+    get:
+      summary: Lista todos os certificados (requer autenticação)
+      tags: [Certificados]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de certificados
+        '401':
+          description: Token de autenticação inválido
+
+  /certificates/user/{userId}:
+    get:
+      summary: Lista certificados de um usuário
+      tags: [Certificados]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de certificados do usuário
+        '401':
+          description: Token de autenticação inválido
+
+  /certificates/{id}/download:
+    get:
+      summary: Download de certificado por ID
+      tags: [Certificados]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Arquivo do certificado (PDF)
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Token de autenticação inválido
+
+  /certificates/{id}/status:
+    patch:
+      summary: Atualiza status do certificado
+      tags: [Certificados]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+      responses:
+        '200':
+          description: Status atualizado
+        '401':
+          description: Token de autenticação inválido
+        '403':
+          description: Acesso negado
+
+  /certificates/{id}:
+    delete:
+      summary: Deleta um certificado por ID
+      tags: [Certificados]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Certificado deletado
+        '401':
+          description: Token de autenticação inválido
+
+  /certificates/report:
+    get:
+      summary: Gera relatório de certificados (usuário autenticado)
+      tags: [Certificados]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Relatório gerado
+
+  /certificates/report/{userId}:
+    get:
+      summary: Gera relatório de certificados para usuário (admin)
+      tags: [Certificados]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Relatório gerado
+
+  # MÓDULO RELATÓRIOS (unificado)
+  # ROTAS `/api/relatorios` - endpoints consolidados para relatórios
+  /relatorios/coordenadores/{id}:
+    get:
+      summary: Lista relatórios sob responsabilidade de um coordenador
+      tags: [Relatórios]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de relatórios do coordenador
+        '401':
+          description: Token de autenticação inválido
+        '403':
+          description: Acesso negado
+
+  /relatorios/tutores/{id}:
+    get:
+      summary: Lista relatórios sob responsabilidade de um tutor
+      tags: [Relatórios]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de relatórios do tutor
+        '401':
+          description: Token de autenticação inválido
+        '403':
+          description: Acesso negado
+
+  /relatorios/bolsistas/{id}:
+    get:
+      summary: Lista relatórios sob responsabilidade de um bolsista
+      tags: [Relatórios]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de relatórios do bolsista
+        '401':
+          description: Token de autenticação inválido
+        '403':
+          description: Acesso negado
+
+  /relatorios:
+    post:
+      summary: Cria um novo relatório (admin)
+      tags: [Relatórios]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Relatório criado
+        '401':
+          description: Token de autenticação inválido
+        '403':
+          description: Acesso negado
+
+    get:
+      summary: Lista todos os relatórios (admin)
+      tags: [Relatórios]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de relatórios
+        '401':
+          description: Token de autenticação inválido
+        '403':
+          description: Acesso negado
+
+  /relatorios/{id}:
+    get:
+      summary: Busca relatório por ID
+      tags: [Relatórios]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Relatório encontrado
+        '404':
+          description: Relatório não encontrado
+
+    put:
+      summary: Atualiza relatório por ID (admin)
+      tags: [Relatórios]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Relatório atualizado
+
+    delete:
+      summary: Remove relatório por ID (admin)
+      tags: [Relatórios]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Relatório removido
+
+  /relatorios/consolidado:
+    post:
+      summary: Gerar relatório consolidado
+      tags: [Relatórios]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                periodoId:
+                  type: string
+                dataInicio:
+                  type: string
+                  format: date
+                dataFim:
+                  type: string
+                  format: date
+                incluirDetalhes:
+                  type: boolean
+      responses:
+        '200':
+          description: Relatório consolidado gerado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelatorioConsolidadoDTO'
+
+  /relatorios/template:
+    get:
+      summary: Obter template do relatório consolidado
+      tags: [Relatórios]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Template do relatório retornado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+
+  /cursos:
+    post:
+      summary: Cria um novo curso
+      tags: ["Cursos"]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                  description: Nome do curso
+                descricao:
+                  type: string
+                  description: Descrição do curso
+                cargaHoraria:
+                  type: integer
+                  description: Carga horária em horas
+                categoria:
+                  type: string
+                  description: Categoria do curso
+              required:
+                - nome
+                - descricao
+                - cargaHoraria
+                - categoria
+      responses:
+        '201':
+          description: Curso criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Curso'
+        '400':
+          description: Dados inválidos
+        '401':
+          description: Token não fornecido ou inválido
+        '403':
+          description: Acesso negado
+    
+    get:
+      summary: Lista todos os cursos
+      tags: ["Cursos"]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de cursos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Curso'
+        '401':
+          description: Token não fornecido ou inválido
+        '403':
+          description: Acesso negado
+
+  /cursos/{id}:
+    get:
+      summary: Busca curso por ID
+      tags: ["Cursos"]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Curso encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Curso'
+        '404':
+          description: Curso não encontrado
+        '401':
+          description: Token não fornecido ou inválido
+    
+    put:
+      summary: Atualiza curso por ID
+      tags: ["Cursos"]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                descricao:
+                  type: string
+                cargaHoraria:
+                  type: integer
+                categoria:
+                  type: string
+      responses:
+        '200':
+          description: Curso atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Curso'
+        '404':
+          description: Curso não encontrado
+        '400':
+          description: Dados inválidos
+        '401':
+          description: Token não fornecido ou inválido
+    
+    delete:
+      summary: Remove curso por ID
+      tags: ["Cursos"]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Curso removido com sucesso
+        '404':
+          description: Curso não encontrado
+        '401':
+          description: Token não fornecido ou inválido
+
+  # MÓDULO ALUNO
+  /alunos:
+    post:
+      summary: Cria um novo aluno
+      tags: ["Alunos"]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                usuarioId:
+                  type: string
+                  description: ID do usuário
+                cursoId:
+                  type: string
+                  description: ID do curso
+                tipoAcesso:
+                  type: string
+                  enum: [ACESSO_TUTOR, ACESSO_BOLSISTA]
+                  description: Tipo de acesso do aluno
+              required:
+                - usuarioId
+                - cursoId
+                - tipoAcesso
+      responses:
+        '201':
+          description: Aluno criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Aluno'
+        '400':
+          description: Dados inválidos
+        '401':
+          description: Token não fornecido ou inválido
+        '403':
+          description: Acesso negado
+    
+    get:
+      summary: Lista todos os alunos
+      tags: ["Alunos"]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de alunos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Aluno'
+        '401':
+          description: Token não fornecido ou inválido
+        '403':
+          description: Acesso negado
+
+  /alunos/{id}:
+    get:
+      summary: Busca aluno por ID
+      tags: ["Alunos"]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Aluno encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Aluno'
+        '404':
+          description: Aluno não encontrado
+        '401':
+          description: Token não fornecido ou inválido
+    
+    put:
+      summary: Atualiza aluno por ID
+      tags: ["Alunos"]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cursoId:
+                  type: string
+                tipoAcesso:
+                  type: string
+                  enum: [ACESSO_TUTOR, ACESSO_BOLSISTA]
+      responses:
+        '200':
+          description: Aluno atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Aluno'
+        '404':
+          description: Aluno não encontrado
+        '400':
+          description: Dados inválidos
+        '401':
+          description: Token não fornecido ou inválido
+    
+    delete:
+      summary: Remove aluno por ID
+      tags: ["Alunos"]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Aluno removido com sucesso
+        '404':
+          description: Aluno não encontrado
+        '401':
+          description: Token não fornecido ou inválido
+
+  /alunos/tipo/{tipo}:
+    get:
+      summary: Lista alunos por tipo de acesso
+      tags: ["Alunos"]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: tipo
+          required: true
+          schema:
+            type: string
+            enum: [ACESSO_TUTOR, ACESSO_BOLSISTA]
+      responses:
+        '200':
+          description: Lista de alunos filtrada por tipo
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Aluno'
+        '400':
+          description: Tipo de acesso inválido
+        '401':
+          description: Token não fornecido ou inválido
+        '403':
+          description: Acesso negado
+
+  # MÓDULO TUTOR
+  /tutores/meus-alunos:
+    get:
+      summary: Tutor visualiza seus próprios alunos
+      tags: ["Tutores"]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de alunos do tutor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Aluno'
+                  total:
+                    type: integer
+        '404':
+          description: Tutor não encontrado
+        '401':
+          description: Token não fornecido ou inválido
+        '403':
+          description: Acesso negado - apenas tutores
+
+  /tutores/{id}/alunos:
+    get:
+      summary: Coordenador visualiza alunos de um tutor específico
+      tags: ["Tutores"]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID do usuário tutor
+      responses:
+        '200':
+          description: Lista de alunos do tutor específico
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Aluno'
+                  total:
+                    type: integer
+        '404':
+          description: Tutor não encontrado
+        '401':
+          description: Token não fornecido ou inválido
+        '403':
+          description: Acesso negado - apenas coordenadores
+
+  # MÓDULO AVALIAÇÃO DE TUTORIA
+  /avaliacao-tutoria:
+    post:
+      summary: Cria nova avaliação do projeto de tutoria
+      tags: ["Avaliação Tutoria"]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                periodoId:
+                  type: string
+                  description: ID do período de tutoria
+                tipoAvaliador:
+                  type: string
+                  enum: [TUTOR, ALUNO]
+                  description: Tipo do avaliador
+                aspectosPositivos:
+                  type: array
+                  items:
+                    type: string
+                  description: Aspectos positivos da experiência
+                aspectosNegativos:
+                  type: array
+                  items:
+                    type: string
+                  description: Aspectos negativos da experiência
+                sugestoesMelhorias:
+                  type: array
+                  items:
+                    type: string
+                  description: Sugestões de melhorias
+                comentarioGeral:
+                  type: string
+                  description: Comentário geral sobre a experiência
+                dificuldadesComunicacao:
+                  type: string
+                  description: Dificuldades de comunicação
+                dificuldadesConteudo:
+                  type: string
+                  description: Dificuldades com o conteúdo
+                dificuldadesMetodologicas:
+                  type: string
+                  description: Dificuldades metodológicas
+                dificuldadesRecursos:
+                  type: string
+                  description: Dificuldades com recursos
+                outrasDificuldades:
+                  type: string
+                  description: Outras dificuldades
+                nivelSatisfacaoGeral:
+                  type: string
+                  enum: [MUITO_INSATISFEITO, INSATISFEITO, NEUTRO, SATISFEITO, MUITO_SATISFEITO]
+                  description: Nível de satisfação geral
+                recomendariaPrograma:
+                  type: boolean
+                  description: Se recomendaria o programa
+                justificativaRecomendacao:
+                  type: string
+                  description: Justificativa da recomendação
+              required:
+                - periodoId
+                - tipoAvaliador
+                - comentarioGeral
+                - nivelSatisfacaoGeral
+                - recomendariaPrograma
+                - justificativaRecomendacao
+      responses:
+        '201':
+          description: Avaliação criada com sucesso
+        '400':
+          description: Dados inválidos
+        '401':
+          description: Token não fornecido ou inválido
+        '403':
+          description: Acesso negado
+
+    get:
+      summary: Lista avaliações de tutoria (coordenadores)
+      tags: ["Avaliação Tutoria"]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: usuarioId
+          schema:
+            type: string
+          description: Filtrar por usuário
+        - in: query
+          name: periodoId
+          schema:
+            type: string
+          description: Filtrar por período
+        - in: query
+          name: tipoAvaliador
+          schema:
+            type: string
+            enum: [TUTOR, ALUNO]
+          description: Filtrar por tipo de avaliador
+      responses:
+        '200':
+          description: Lista de avaliações
+        '401':
+          description: Token não fornecido ou inválido
+        '403':
+          description: Acesso negado - apenas coordenadores
+
+  /avaliacao-tutoria/minhas:
+    get:
+      summary: Lista avaliações próprias do usuário
+      tags: ["Avaliação Tutoria"]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista das próprias avaliações
+        '401':
+          description: Token não fornecido ou inválido
+        '403':
+          description: Acesso negado
+
+  /avaliacao-tutoria/{id}:
+    put:
+      summary: Atualiza avaliação de tutoria
+      tags: ["Avaliação Tutoria"]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                aspectosPositivos:
+                  type: array
+                  items:
+                    type: string
+                aspectosNegativos:
+                  type: array
+                  items:
+                    type: string
+                sugestoesMelhorias:
+                  type: array
+                  items:
+                    type: string
+                comentarioGeral:
+                  type: string
+                nivelSatisfacaoGeral:
+                  type: string
+                  enum: [MUITO_INSATISFEITO, INSATISFEITO, NEUTRO, SATISFEITO, MUITO_SATISFEITO]
+                recomendariaPrograma:
+                  type: boolean
+                justificativaRecomendacao:
+                  type: string
+      responses:
+        '200':
+          description: Avaliação atualizada com sucesso
+        '404':
+          description: Avaliação não encontrada
+        '400':
+          description: Dados inválidos ou avaliação não pode ser editada
+        '401':
+          description: Token não fornecido ou inválido
+        '403':
+          description: Acesso negado
+
+  /periodo-tutoria:
+    get:
+      summary: Lista todos os períodos de tutoria
+      tags: ["Configurações"]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de períodos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PeriodoTutoria'
+    post:
+      summary: Cria um novo período de tutoria
+      tags: ["Configurações"]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PeriodoTutoria'
+      responses:
+        '201':
+          description: Período criado com sucesso
+
+  /periodo-tutoria/{id}:
+    put:
+      summary: Atualiza um período de tutoria
+      tags: ["Configurações"]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PeriodoTutoria'
+      responses:
+        '200':
+          description: Período atualizado
+    delete:
+      summary: Remove um período de tutoria
+      tags: ["Configurações"]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Período removido
+
+  /carga-horaria-minima:
+    get:
+      summary: Lista configurações de carga horária mínima
+      tags: ["Configurações"]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: periodoId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de configurações
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CargaHorariaMinima'
+    post:
+      summary: Salva/Atualiza configuração de carga horária mínima
+      tags: ["Configurações"]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CargaHorariaMinima'
+      responses:
+        '200':
+          description: Configuração salva com sucesso
+
+  /alocar-tutor-aluno:
+    get:
+      summary: Lista vínculos entre tutores e alunos
+      tags: ["Configurações"]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: periodoId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de vínculos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AlocarTutorAluno'
+    post:
+      summary: Cria um novo vínculo entre tutor e aluno
+      tags: ["Configurações"]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlocarTutorAluno'
+      responses:
+        '201':
+          description: Vínculo criado com sucesso
+
+  /alocar-tutor-aluno/{id}:
+    delete:
+      summary: Remove um vínculo entre tutor e aluno
+      tags: ["Configurações"]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Vínculo removido
+
+
+
+# Tags adicionais
+tags:
+  - name: Bolsista
+    description: Operações específicas para bolsistas
+  - name: Relatórios
+    description: Geração de relatórios consolidados

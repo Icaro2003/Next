@@ -1,0 +1,61 @@
+{
+    "users": [
+        {
+            "id": 1,
+            "name": "João Silva",
+            "matricula": "12389",
+            "email": "joaosilva@email.com",
+            "curso": "Sistemas de Informação",
+            "password": "123456",
+            "role": "aluno",
+            "semestre": "2026.1"
+        },
+        {
+            "id": 2,
+            "name": "Maria Oliveira",
+            "matricula": "45621",
+            "email": "maria.oliveira@email.com",
+            "curso": "Engenharia de Minas",
+            "password": "123456",
+            "role": "aluno",
+            "semestre": "2026.1"
+        },
+        {
+            "id": 3,
+            "name": "Carlos Santos",
+            "matricula": "78934",
+            "email": "carlos.santos@email.com",
+            "curso": "Engenharia Civil",
+            "password": "123456",
+            "role": "tutor",
+            "semestre": "2024.1"
+        },
+        {
+            "id": 4,
+            "name": "Ana Pereira",
+            "matricula": "32198",
+            "email": "ana.pereira@email.com",
+            "curso": "Ciência da Computação",
+            "password": "123456",
+            "role": "bolsista"
+        },
+        {
+            "id": 5,
+            "name": "Ricardo Almeida",
+            "matricula": "65477",
+            "email": "ricardo.almeida@email.com",
+            "password": "123456",
+            "role": "coordenador"
+        },
+        {
+            "id": 6,
+            "name": "Carlos Almeida",
+            "matricula": "79999",
+            "email": "carlos.almeida@email.com",
+            "curso": "Sistemas de Informação",
+            "password": "123456",
+            "role": "tutor",
+            "semestre": "2024.1"
+        }
+    ]
+}

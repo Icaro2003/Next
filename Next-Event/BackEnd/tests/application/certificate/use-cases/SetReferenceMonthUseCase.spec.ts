@@ -2,16 +2,14 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { SetReferenceMonthUseCase } from '../../../../src/application/certificate/use-cases/SetReferenceMonthUseCase';
 
 // Mock do Prisma
-const mockUpsert = jest.fn();
-const mockFindUnique = jest.fn();
+const mockFindFirst = jest.fn();
 
 jest.mock('@prisma/client', () => {
     return {
         PrismaClient: jest.fn().mockImplementation(() => {
             return {
-                config: {
-                    upsert: mockUpsert,
-                    findUnique: mockFindUnique
+                periodoTutoria: {
+                    findFirst: mockFindFirst
                 }
             };
         })
@@ -27,8 +25,9 @@ describe('SetReferenceMonthUseCase', () => {
     });
 
     it('Deve definir mês de referência com sucesso', async () => {
+        (mockFindFirst as any).mockResolvedValue({ id: 'periodo-1', ativo: true });
         await useCase.execute({ month: 5, year: 2024 });
-        expect(mockUpsert).toHaveBeenCalled();
+        expect(mockFindFirst).toHaveBeenCalled();
     });
 
     it('Deve validar mês inválido', async () => {

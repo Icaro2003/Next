@@ -16,9 +16,9 @@ describe('Carga Horária Mínima API Tests', () => {
 
   beforeEach(async () => {
     // 1. Limpeza
-    await prisma.cargaHorariaMinima.deleteMany().catch(() => {});
-    await prisma.periodoTutoria.deleteMany().catch(() => {});
-    await prisma.usuario.deleteMany().catch(() => {});
+    await prisma.cargaHorariaMinima.deleteMany().catch(() => { });
+    await prisma.periodoTutoria.deleteMany().catch(() => { });
+    await prisma.usuario.deleteMany().catch(() => { });
 
     // 2. Setup: Coordenador
     const coord = await prisma.usuario.create({
@@ -27,7 +27,7 @@ describe('Carga Horária Mínima API Tests', () => {
 
     // 3. Setup: Período
     const periodo = await prisma.periodoTutoria.create({
-        data: { nome: '2024.1', dataInicio: new Date(), dataFim: new Date(), ativo: true }
+      data: { nome: '2024.1', dataInicio: new Date(), dataFim: new Date(), ativo: true }
     });
     periodoId = periodo.id;
 
@@ -40,44 +40,44 @@ describe('Carga Horária Mínima API Tests', () => {
   });
 
   describe('POST /api/cargas-horarias', () => {
-      it('deve criar configuração de carga horária', async () => {
-          const response = await request(app)
-            .post('/api/cargas-horarias')
-            .set('Authorization', authToken)
-            .send({
-                periodoId,
-                categoria: 'MONITORIA',
-                horasMinimas: 12,
-                descricao: 'Mínimo para aprovação'
-            });
+    it('deve criar configuração de carga horária', async () => {
+      const response = await request(app)
+        .post('/api/carga-horaria-minima')
+        .set('Authorization', authToken)
+        .send({
+          periodoId,
+          categoria: 'MONITORIA',
+          horasMinimas: 12,
+          descricao: 'Mínimo para aprovação'
+        });
 
-          expect([200, 201]).toContain(response.status);
-          
-          const noBanco = await prisma.cargaHorariaMinima.findFirst({
-              where: { periodoId, categoria: 'MONITORIA' }
-          });
-          expect(noBanco).toBeTruthy();
-          expect(noBanco?.horasMinimas).toBe(12);
+      expect([200, 201]).toContain(response.status);
+
+      const noBanco = await prisma.cargaHorariaMinima.findFirst({
+        where: { periodoId, categoria: 'MONITORIA' }
       });
+      expect(noBanco).toBeTruthy();
+      expect(noBanco?.horasMinimas).toBe(12);
+    });
   });
 
   describe('GET /api/cargas-horarias', () => {
-      it('deve listar configurações', async () => {
-          await prisma.cargaHorariaMinima.create({
-              data: {
-                  periodoId,
-                  categoria: 'EVENTOS',
-                  horasMinimas: 5,
-                  descricao: 'Eventos obrigatórios'
-              }
-          });
-
-          const response = await request(app)
-            .get('/api/cargas-horarias')
-            .set('Authorization', authToken);
-
-          expect(response.status).toBe(200);
-          expect(Array.isArray(response.body)).toBe(true);
+    it('deve listar configurações', async () => {
+      await prisma.cargaHorariaMinima.create({
+        data: {
+          periodoId,
+          categoria: 'EVENTOS',
+          horasMinimas: 5,
+          descricao: 'Eventos obrigatórios'
+        }
       });
+
+      const response = await request(app)
+        .get('/api/carga-horaria-minima')
+        .set('Authorization', authToken);
+
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.body)).toBe(true);
+    });
   });
 });

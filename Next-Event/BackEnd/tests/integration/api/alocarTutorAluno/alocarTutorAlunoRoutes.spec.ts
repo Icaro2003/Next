@@ -18,12 +18,12 @@ describe('Alocar Tutor-Aluno API Integration', () => {
 
   beforeEach(async () => {
     // 1. Limpeza
-    await prisma.alocarTutorAluno.deleteMany().catch(() => {});
-    await prisma.bolsista.deleteMany().catch(() => {});
-    await prisma.periodoTutoria.deleteMany().catch(() => {});
-    await prisma.tutor.deleteMany().catch(() => {});
-    await prisma.usuario.deleteMany().catch(() => {});
-    await prisma.curso.deleteMany().catch(() => {});
+    await prisma.alocarTutorAluno.deleteMany().catch(() => { });
+    await prisma.bolsista.deleteMany().catch(() => { });
+    await prisma.periodoTutoria.deleteMany().catch(() => { });
+    await prisma.tutor.deleteMany().catch(() => { });
+    await prisma.usuario.deleteMany().catch(() => { });
+    await prisma.curso.deleteMany().catch(() => { });
 
     // 2. Setup: Coordenador
     const coord = await prisma.usuario.create({
@@ -32,32 +32,32 @@ describe('Alocar Tutor-Aluno API Integration', () => {
 
     // 3. Setup: Tutor
     const userTutor = await prisma.usuario.create({
-        data: { nome: 'Tutor', email: `t-${randomUUID()}@test.com`, senha: '123', status: 'ATIVO' }
+      data: { nome: 'Tutor', email: `t-${randomUUID()}@test.com`, senha: '123', status: 'ATIVO' }
     });
     const tutor = await prisma.tutor.create({ data: { usuarioId: userTutor.id } });
     tutorId = tutor.id;
 
     // 4. Setup: Bolsista
     const userBolsista = await prisma.usuario.create({
-        data: { nome: 'Bolsista', email: `b-${randomUUID()}@test.com`, senha: '123', status: 'ATIVO' }
+      data: { nome: 'Bolsista', email: `b-${randomUUID()}@test.com`, senha: '123', status: 'ATIVO' }
     });
-    
+
     const curso = await prisma.curso.create({
-        data: { nome: 'Curso B', codigo: `CB-${randomUUID()}`, descricao: 'D' }
+      data: { nome: 'Curso B', codigo: `CB-${randomUUID()}`, descricao: 'D' }
     });
 
     const bolsista = await prisma.bolsista.create({
-        data: { 
-            usuarioId: userBolsista.id, 
-            curso: 'Engenharia',
-            anoIngresso: 2024 
-        }
+      data: {
+        usuarioId: userBolsista.id,
+        curso: 'Engenharia',
+        anoIngresso: 2024
+      }
     });
     bolsistaId = bolsista.id;
 
     // 5. Setup: Periodo
     const periodo = await prisma.periodoTutoria.create({
-        data: { nome: '2024.1', dataInicio: new Date(), dataFim: new Date(), ativo: true }
+      data: { nome: '2024.1', dataInicio: new Date(), dataFim: new Date(), ativo: true }
     });
     periodoId = periodo.id;
 
@@ -71,44 +71,44 @@ describe('Alocar Tutor-Aluno API Integration', () => {
   });
 
   describe('POST /api/alocacoes', () => {
-      it('deve realizar a alocação com sucesso', async () => {
-          const response = await request(app)
-            .post('/api/alocacoes') 
-            .set('Authorization', authToken)
-            .send({
-                tutorId,
-                bolsistaId,
-                periodoId,
-                dataInicio: new Date().toISOString()
-            });
+    it('deve realizar a alocação com sucesso', async () => {
+      const response = await request(app)
+        .post('/api/alocar-tutor-aluno')
+        .set('Authorization', authToken)
+        .send({
+          tutorId,
+          bolsistaId,
+          periodoId,
+          dataInicio: new Date().toISOString()
+        });
 
-          expect([200, 201]).toContain(response.status);
-          
-          const vinculo = await prisma.alocarTutorAluno.findFirst({
-              where: { tutorId, bolsistaId }
-          });
-          expect(vinculo).toBeTruthy();
+      expect([200, 201]).toContain(response.status);
+
+      const vinculo = await prisma.alocarTutorAluno.findFirst({
+        where: { tutorId, bolsistaId }
       });
+      expect(vinculo).toBeTruthy();
+    });
   });
-  
+
   describe('GET /api/alocacoes', () => {
-      it('deve listar alocacoes', async () => {
-          await prisma.alocarTutorAluno.create({
-              data: { 
-                  tutorId, 
-                  bolsistaId, 
-                  periodoId,
-                  dataInicio: new Date()
-              }
-          });
-
-          const response = await request(app)
-            .get('/api/alocacoes')
-            .set('Authorization', authToken);
-
-          expect(response.status).toBe(200);
-          expect(Array.isArray(response.body)).toBe(true);
-          expect(response.body.length).toBeGreaterThan(0);
+    it('deve listar alocacoes', async () => {
+      await prisma.alocarTutorAluno.create({
+        data: {
+          tutorId,
+          bolsistaId,
+          periodoId,
+          dataInicio: new Date()
+        }
       });
+
+      const response = await request(app)
+        .get('/api/alocar-tutor-aluno')
+        .set('Authorization', authToken);
+
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.length).toBeGreaterThan(0);
+    });
   });
 });

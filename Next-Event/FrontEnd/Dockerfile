@@ -8,7 +8,7 @@ RUN npm ci
 
 COPY . .
 
-# Argumento para URL da API (opcional, caso seu front precise saber onde o back está no build)
+# Argumento para URL da API
 ARG VITE_API_URL=http://localhost:4000/api
 ENV VITE_API_URL=$VITE_API_URL
 

@@ -10,10 +10,10 @@ COPY prisma ./prisma/
 # Instala dependências
 RUN npm ci
 
-# Gera o cliente do Prisma (essencial para o TS compilar)
+# Gera o cliente do Prisma 
 RUN npx prisma generate
 
-# Copia o código fonte (Isso inclui o openapi.yaml para o build)
+# Copia o código fonte
 COPY . .
 
 # Compila o TypeScript (Gera pasta dist)
@@ -28,7 +28,6 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# --- CORREÇÃO IMPORTANTE AQUI ---
 # Copia o arquivo openapi.yaml para a imagem final
 COPY openapi.yaml ./
 # --------------------------------
@@ -42,7 +41,7 @@ RUN npx prisma generate
 # Copia o código compilado do estágio anterior
 COPY --from=build /app/dist ./dist
 
-# Expõe a porta (O Express geralmente roda na 3000 ou na definida em process.env.PORT)
+# Expõe a porta 
 EXPOSE 3000
 
 # O comando de inicialização será controlado pelo docker-compose

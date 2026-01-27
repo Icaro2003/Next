@@ -19,13 +19,11 @@ services:
       timeout: 5s
       retries: 5
 
-  # Serviço do Back-end (Agora na porta 3000)
   backend:
     container_name: next_event_backend
     build:
       context: ./BackEnd
       dockerfile: Dockerfile
-    # MUDANÇA AQUI: Porta 3000 do PC -> 3000 do Container
     ports:
       - "3000:3000"
     environment:
@@ -38,13 +36,12 @@ services:
         condition: service_healthy
     command: sh -c "npx prisma migrate deploy && npm start"
 
-  # Serviço do Front-end (Agora na porta 4000)
+  # Serviço do Front-end 
   frontend:
     container_name: next_event_frontend
     build:
       context: ./FrontEnd
       dockerfile: Dockerfile
-    # MUDANÇA AQUI: Porta 4000 do PC -> 80 do Nginx
     ports:
       - "4000:80"
     depends_on:

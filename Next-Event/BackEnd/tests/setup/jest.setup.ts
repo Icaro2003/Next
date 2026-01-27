@@ -14,7 +14,7 @@ beforeAll(async () => {
   global.__PRISMA__ = new PrismaClient({
     datasources: {
       db: {
-        url: process.env.DATABASE_TEST_URL || process.env.DATABASE_URL || "postgresql://postgres:password@localhost:5432/nextevent_test"
+        url: process.env.DATABASE_TEST_URL || process.env.DATABASE_URL || "postgresql://postgres:postgres123@localhost:5432/nextevent_test"
       }
     }
   });

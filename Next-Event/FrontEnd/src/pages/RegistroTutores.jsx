@@ -55,8 +55,6 @@ function RegistroTutores() {
                             <Nav.Link onClick={() => navigate('/relatorio-individual-tutor')} className="mx-2 text-dark">Relatório Tutor</Nav.Link>
                             <Nav.Link onClick={() => navigate('/relatorio-individual-aluno')} className="mx-2 text-dark">Relatório Aluno</Nav.Link>
                             <Nav.Link onClick={() => navigate('/validar-certificados')} className="mx-2 text-dark">Validar Certificados</Nav.Link>
-                            <Nav.Link onClick={() => navigate('/relatorio-geral-aluno')} className="mx-2 text-dark">Relatório Geral Alunos</Nav.Link>
-                            <Nav.Link onClick={() => navigate('/relatorio-geral-tutor')} className="mx-2 text-dark">Relatório Geral Tutores</Nav.Link>
                             <Nav.Link onClick={() => navigate('/atribuir-papel')} className="mx-2 text-dark">Atribuir Papel</Nav.Link>
                         </Nav>
 
@@ -77,7 +75,7 @@ function RegistroTutores() {
             <Container className="my-5 flex-grow-1">
                 <h1 className="text-primary fw-bold mb-3">Registro de Tutores</h1>
 
-                <div className="d-flex justify-content-end mb-3">
+                {/* <div className="d-flex justify-content-end mb-3">
                     <Button
                         variant="primary"
                         className="px-4 py-2 d-flex justify-content-center align-items-center gap-1"
@@ -86,7 +84,7 @@ function RegistroTutores() {
                         <TbReportAnalytics size={25} className="text-light" />
                         <span>Relatório geral</span>
                     </Button>
-                </div>
+                </div> */}
 
                 {tutores.length > 0 ?
                     <RecordsTable user={tutores} route={'/relatorio-individual-tutor'} />

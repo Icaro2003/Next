@@ -44,21 +44,21 @@ function App() {
       <Route path="/redefinir-senha" element={<RedefinirSenha />} />
       <Route path="/verificar-codigo" element={<VerificarCodigo />} />
       <Route path="/contato" element={<Contato />} />
-      <Route path="/teste" element={<Teste />} />
+      {/* <Route path="/teste" element={<Teste />} /> */}
 
       <Route path="/aluno" element={<HomeAluno />} />
 
       <Route path="/meus-certificados" element={<MeusCertificados />} />
       <Route path="/avaliacao-tutoria" element={<AvaliacaoTutoria />} />
-      <Route path="/editar-perfil" element={<EditarPerfil />} />
+      {/* <Route path="/editar-perfil" element={<EditarPerfil />} /> */}
 
       <Route path="/bolsista" element={<HomeBolsista />} />
       <Route path="/registro-aluno" element={<RegistroAluno />} />
       <Route path="/registro-tutores" element={<RegistroTutores />} />
       <Route path="/relatorio-individual-tutor" element={<RelatorioIndividualTutor />} />
-      <Route path="/relatorio-geral-tutor" element={<RelatorioGeralTutor />} />
+      {/* <Route path="/relatorio-geral-tutor" element={<RelatorioGeralTutor />} /> */}
       <Route path="/relatorio-individual-aluno" element={<RelatorioIndividualAluno />} />
-      <Route path="/relatorio-geral-aluno" element={<RelatorioGeralAluno />} />
+      {/* <Route path="/relatorio-geral-aluno" element={<RelatorioGeralAluno />} /> */}
       <Route path="/validar-certificados" element={<ValidarCertificados />} />
       <Route path="/predefinicoes" element={<Predefinicoes />} />
 
@@ -68,7 +68,7 @@ function App() {
       <Route path="/relatorios-tutor" element={<RelatoriosTutor />} />
 
       <Route path="/coordenador" element={<HomeCoordenador />} />
-      <Route path="/relatorios-coordenador" element={<RelatoriosCoordenador />} />
+      {/* <Route path="/relatorios-coordenador" element={<RelatoriosCoordenador />} /> */}
       <Route path="/atribuir-papel" element={<AtribuirPapel />} />
 
     </Routes>

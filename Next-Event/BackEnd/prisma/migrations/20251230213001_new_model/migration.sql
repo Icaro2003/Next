@@ -13,9 +13,6 @@ CREATE TYPE "TipoRelatorio" AS ENUM ('ALUNO', 'TUTOR', 'CERTIFICADO', 'ACOMPANHA
 -- CreateEnum
 CREATE TYPE "CategoriaWorkload" AS ENUM ('EVENTOS', 'MONITORIA', 'ESTUDOS_INDIVIDUAIS');
 
--- CreateEnum
-CREATE TYPE "TipoAcessoAluno" AS ENUM ('ACESSO_TUTOR', 'ACESSO_BOLSISTA');
-
 -- CreateTable
 CREATE TABLE "notification" (
     "id" TEXT NOT NULL,
@@ -53,7 +50,6 @@ CREATE TABLE "coordenador" (
     "usuarioId" TEXT NOT NULL,
     "area" TEXT,
     "nivel" TEXT,
-    "cursoId" TEXT,
 
     CONSTRAINT "coordenador_pkey" PRIMARY KEY ("id")
 );
@@ -221,49 +217,6 @@ CREATE TABLE "carga_horaria_minima" (
     CONSTRAINT "carga_horaria_minima_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "curso" (
-    "id" TEXT NOT NULL,
-    "nome" TEXT NOT NULL,
-    "codigo" TEXT NOT NULL,
-    "descricao" TEXT,
-    "criadoEm" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "ativo" BOOLEAN NOT NULL DEFAULT true,
-    "atualizadoEm" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "curso_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "aluno" (
-    "id" TEXT NOT NULL,
-    "usuarioId" TEXT NOT NULL,
-    "cursoId" TEXT NOT NULL,
-    "matricula" TEXT NOT NULL,
-    "criadoEm" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "atualizadoEm" TIMESTAMP(3) NOT NULL,
-    "anoIngresso" INTEGER,
-    "ativo" BOOLEAN NOT NULL DEFAULT true,
-    "semestre" INTEGER DEFAULT 1,
-    "tipoAcesso" "TipoAcessoAluno" NOT NULL,
-
-    CONSTRAINT "aluno_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "avaliacao_tutoria" (
-    "id" TEXT NOT NULL,
-    "usuarioId" TEXT NOT NULL,
-    "periodoId" TEXT NOT NULL,
-    "tipoAvaliador" TEXT NOT NULL,
-    "conteudo" JSONB NOT NULL,
-    "status" TEXT NOT NULL DEFAULT 'RASCUNHO',
-    "dataEnvio" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "dataAtualizacao" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "avaliacao_tutoria_pkey" PRIMARY KEY ("id")
-);
-
 -- CreateIndex
 CREATE UNIQUE INDEX "usuario_email_key" ON "usuario"("email");
 
@@ -312,38 +265,8 @@ CREATE UNIQUE INDEX "alocar_tutor_aluno_bolsistaId_periodoId_key" ON "alocar_tut
 -- CreateIndex
 CREATE UNIQUE INDEX "carga_horaria_minima_periodoId_categoria_key" ON "carga_horaria_minima"("periodoId", "categoria");
 
--- CreateIndex
-CREATE UNIQUE INDEX "curso_codigo_key" ON "curso"("codigo");
-
--- CreateIndex
-CREATE UNIQUE INDEX "aluno_usuarioId_key" ON "aluno"("usuarioId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "aluno_matricula_key" ON "aluno"("matricula");
-
--- CreateIndex
-CREATE INDEX "aluno_cursoId_idx" ON "aluno"("cursoId");
-
--- CreateIndex
-CREATE INDEX "aluno_tipoAcesso_idx" ON "aluno"("tipoAcesso");
-
--- CreateIndex
-CREATE INDEX "avaliacao_tutoria_periodoId_idx" ON "avaliacao_tutoria"("periodoId");
-
--- CreateIndex
-CREATE INDEX "avaliacao_tutoria_tipoAvaliador_idx" ON "avaliacao_tutoria"("tipoAvaliador");
-
--- CreateIndex
-CREATE INDEX "avaliacao_tutoria_status_idx" ON "avaliacao_tutoria"("status");
-
--- CreateIndex
-CREATE UNIQUE INDEX "avaliacao_tutoria_usuarioId_periodoId_tipoAvaliador_key" ON "avaliacao_tutoria"("usuarioId", "periodoId", "tipoAvaliador");
-
 -- AddForeignKey
 ALTER TABLE "notification" ADD CONSTRAINT "notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "usuario"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "coordenador" ADD CONSTRAINT "coordenador_cursoId_fkey" FOREIGN KEY ("cursoId") REFERENCES "curso"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "coordenador" ADD CONSTRAINT "coordenador_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "usuario"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -361,10 +284,10 @@ ALTER TABLE "relatorio" ADD CONSTRAINT "relatorio_geradorId_fkey" FOREIGN KEY ("
 ALTER TABLE "relatorio" ADD CONSTRAINT "relatorio_periodoId_fkey" FOREIGN KEY ("periodoId") REFERENCES "periodo_tutoria"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "relatorio_aluno" ADD CONSTRAINT "relatorio_aluno_bolsistaId_fkey" FOREIGN KEY ("bolsistaId") REFERENCES "bolsista"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "relatorio_aluno" ADD CONSTRAINT "relatorio_aluno_relatorioId_fkey" FOREIGN KEY ("relatorioId") REFERENCES "relatorio"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "relatorio_aluno" ADD CONSTRAINT "relatorio_aluno_relatorioId_fkey" FOREIGN KEY ("relatorioId") REFERENCES "relatorio"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "relatorio_aluno" ADD CONSTRAINT "relatorio_aluno_bolsistaId_fkey" FOREIGN KEY ("bolsistaId") REFERENCES "bolsista"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "relatorio_tutor" ADD CONSTRAINT "relatorio_tutor_relatorioId_fkey" FOREIGN KEY ("relatorioId") REFERENCES "relatorio"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -373,10 +296,10 @@ ALTER TABLE "relatorio_tutor" ADD CONSTRAINT "relatorio_tutor_relatorioId_fkey" 
 ALTER TABLE "relatorio_tutor" ADD CONSTRAINT "relatorio_tutor_tutorId_fkey" FOREIGN KEY ("tutorId") REFERENCES "tutor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "relatorio_certificado" ADD CONSTRAINT "relatorio_certificado_certificadoId_fkey" FOREIGN KEY ("certificadoId") REFERENCES "certificado"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "relatorio_certificado" ADD CONSTRAINT "relatorio_certificado_relatorioId_fkey" FOREIGN KEY ("relatorioId") REFERENCES "relatorio"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "relatorio_certificado" ADD CONSTRAINT "relatorio_certificado_relatorioId_fkey" FOREIGN KEY ("relatorioId") REFERENCES "relatorio"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "relatorio_certificado" ADD CONSTRAINT "relatorio_certificado_certificadoId_fkey" FOREIGN KEY ("certificadoId") REFERENCES "certificado"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "relatorio_acompanhamento" ADD CONSTRAINT "relatorio_acompanhamento_relatorioId_fkey" FOREIGN KEY ("relatorioId") REFERENCES "relatorio"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -385,13 +308,16 @@ ALTER TABLE "relatorio_acompanhamento" ADD CONSTRAINT "relatorio_acompanhamento_
 ALTER TABLE "relatorio_acompanhamento" ADD CONSTRAINT "relatorio_acompanhamento_tutorId_fkey" FOREIGN KEY ("tutorId") REFERENCES "tutor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "relatorio_avaliacao" ADD CONSTRAINT "relatorio_avaliacao_bolsistaId_fkey" FOREIGN KEY ("bolsistaId") REFERENCES "bolsista"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "relatorio_avaliacao" ADD CONSTRAINT "relatorio_avaliacao_relatorioId_fkey" FOREIGN KEY ("relatorioId") REFERENCES "relatorio"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "relatorio_avaliacao" ADD CONSTRAINT "relatorio_avaliacao_bolsistaId_fkey" FOREIGN KEY ("bolsistaId") REFERENCES "bolsista"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "certificado" ADD CONSTRAINT "certificado_bolsistaId_fkey" FOREIGN KEY ("bolsistaId") REFERENCES "bolsista"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "form_acompanhamento" ADD CONSTRAINT "form_acompanhamento_tutorId_fkey" FOREIGN KEY ("tutorId") REFERENCES "tutor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "form_acompanhamento" ADD CONSTRAINT "form_acompanhamento_bolsistaId_fkey" FOREIGN KEY ("bolsistaId") REFERENCES "bolsista"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -400,7 +326,7 @@ ALTER TABLE "form_acompanhamento" ADD CONSTRAINT "form_acompanhamento_bolsistaId
 ALTER TABLE "form_acompanhamento" ADD CONSTRAINT "form_acompanhamento_periodoId_fkey" FOREIGN KEY ("periodoId") REFERENCES "periodo_tutoria"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "form_acompanhamento" ADD CONSTRAINT "form_acompanhamento_tutorId_fkey" FOREIGN KEY ("tutorId") REFERENCES "tutor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "alocar_tutor_aluno" ADD CONSTRAINT "alocar_tutor_aluno_tutorId_fkey" FOREIGN KEY ("tutorId") REFERENCES "tutor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "alocar_tutor_aluno" ADD CONSTRAINT "alocar_tutor_aluno_bolsistaId_fkey" FOREIGN KEY ("bolsistaId") REFERENCES "bolsista"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -409,19 +335,4 @@ ALTER TABLE "alocar_tutor_aluno" ADD CONSTRAINT "alocar_tutor_aluno_bolsistaId_f
 ALTER TABLE "alocar_tutor_aluno" ADD CONSTRAINT "alocar_tutor_aluno_periodoId_fkey" FOREIGN KEY ("periodoId") REFERENCES "periodo_tutoria"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "alocar_tutor_aluno" ADD CONSTRAINT "alocar_tutor_aluno_tutorId_fkey" FOREIGN KEY ("tutorId") REFERENCES "tutor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "carga_horaria_minima" ADD CONSTRAINT "carga_horaria_minima_periodoId_fkey" FOREIGN KEY ("periodoId") REFERENCES "periodo_tutoria"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "aluno" ADD CONSTRAINT "aluno_cursoId_fkey" FOREIGN KEY ("cursoId") REFERENCES "curso"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "aluno" ADD CONSTRAINT "aluno_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "usuario"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "avaliacao_tutoria" ADD CONSTRAINT "avaliacao_tutoria_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "usuario"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "avaliacao_tutoria" ADD CONSTRAINT "avaliacao_tutoria_periodoId_fkey" FOREIGN KEY ("periodoId") REFERENCES "periodo_tutoria"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

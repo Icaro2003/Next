@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+*.log
+.vscode/
+README.md
+
+# Documentação e arquivos de teste
+!README.md

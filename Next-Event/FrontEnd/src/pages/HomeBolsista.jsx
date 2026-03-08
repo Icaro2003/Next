@@ -41,14 +41,6 @@ function HomeBolsista() {
                             <Nav.Link onClick={() => navigate('/bolsista')} className="mx-2 text-dark fw-bold">Home</Nav.Link>
                             <Nav.Link onClick={() => navigate('/meus-certificados')} className="mx-2 text-dark">Certificados</Nav.Link>
                             <Nav.Link onClick={() => navigate('/avaliacao-tutoria')} className="mx-2 text-dark">Avaliação Tutoria</Nav.Link>
-                            {/* <Nav.Link onClick={() => navigate('/registro-aluno')} className="mx-2 text-dark">Registro Alunos</Nav.Link>
-                            <Nav.Link onClick={() => navigate('/registro-tutores')} className="mx-2 text-dark">Registro Tutores</Nav.Link>
-                            <Nav.Link onClick={() => navigate('/predefinicoes')} className="mx-2 text-dark">Predefinições</Nav.Link>
-                            <Nav.Link onClick={() => navigate('/relatorio-individual-tutor')} className="mx-2 text-dark">Relatório Tutor</Nav.Link>
-                            <Nav.Link onClick={() => navigate('/relatorio-individual-aluno')} className="mx-2 text-dark">Relatório Aluno</Nav.Link>
-                            <Nav.Link onClick={() => navigate('/validar-certificados')} className="mx-2 text-dark">Validar Certificados</Nav.Link>
-                            <Nav.Link onClick={() => navigate('/relatorio-geral-aluno')} className="mx-2 text-dark">Relatório Geral Alunos</Nav.Link>
-                            <Nav.Link onClick={() => navigate('/relatorio-geral-tutor')} className="mx-2 text-dark">Relatório Geral Tutores</Nav.Link> */}
                         </Nav>
 
                         <div className="d-flex justify-content-center align-items-center gap-3">
@@ -73,8 +65,9 @@ function HomeBolsista() {
                             </div>
                             <div>
                                 <h2 className="mb-1 fw-bold">{usuario?.nome}</h2>
-                                <Badge bg="light" text="primary" className="mb-2 px-3 py-1">{userRole(usuario?.role)}</Badge>
-                                {/* <p className="mb-0 text-light">Matrícula: {usuario.matricula}</p> */}
+                                {userRole(usuario?.role).toLowerCase() === "bolsista" &&
+                                    <Badge bg="light" text="primary" className="mb-2 px-3 py-1">Aluno</Badge>
+                                }
                             </div>
                         </Col>
                         <Col md={4} className="text-md-end mt-3 mt-md-0">

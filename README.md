@@ -1,6 +1,6 @@
 # Next-Event
 
-Projeto para gerenciamento de eventos e certificados.
+Sistema completo de gestão de certificados acadêmicos, tutoria de alunos e relatórios administrativos.
 
 ## Como Rodar o Projeto
 

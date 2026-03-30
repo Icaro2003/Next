@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Container, Row, Col, Form, Image } from "react-bootstrap";
+import { Container, Row, Col, Form, Image, Modal, Button } from "react-bootstrap";
 import { Link, useNavigate } from 'react-router-dom';
 
 import InputFlutuante from '../components/InputFlutuante';
@@ -15,6 +15,11 @@ import '../css/form-pages.css';
 
 function Cadastro() {
     const navigate = useNavigate();
+
+    const [showModal, setShowModal] = useState(false);
+
+    const handleCloseModal = () => setShowModal(false);
+    const handleShowModal = () => setShowModal(true);
 
     const { show, message, variant, alertKey, handleAlert } = useAlert();
 
@@ -65,7 +70,6 @@ function Cadastro() {
         const dadosCadastroNovos = { semestre };
 
         localStorage.setItem("semestre", JSON.stringify(dadosCadastroNovos));
-        console.log(JSON.parse(localStorage.getItem("semestre")));
 
         if (!response.ok) {
             throw new Error(data.error || "Erro ao cadastrar aluno!");
@@ -79,8 +83,7 @@ function Cadastro() {
 
         try {
             await registerUser();
-            alert("Cadastro realizado com sucesso! Faça o login.");
-            navigate("/");
+            handleShowModal();
         } catch (error) {
             handleAlert(error?.message || "Erro ao cadastrar. Tente novamente.");
         }
@@ -235,6 +238,18 @@ function Cadastro() {
                     </Col>
                 </Row>
             </Container>
+
+            <Modal show={showModal} onHide={handleCloseModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title className="text-primary fw-bold">Cadastro realizado!</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-muted">Seu cadastro foi realizado com sucesso. Você já pode fazer o login na plataforma!</Modal.Body>
+                <Modal.Footer>
+                    <Button variant="primary" onClick={() => navigate("/")}>
+                        Ir para o Login
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 };

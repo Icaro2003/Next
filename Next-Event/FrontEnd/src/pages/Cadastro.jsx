@@ -24,15 +24,12 @@ function Cadastro() {
     const { show, message, variant, alertKey, handleAlert } = useAlert();
 
     const [dados, setDados] = useState({
-        // Dados do usuário
         nome: "",
         email: "",
         senha: "",
         confirmarSenha: "",
         matricula: "",
         cpf: "",
-
-        // Bolsista / Aluno
         anoIngresso: "",
         curso: "",
         semestre: ""
@@ -72,7 +69,7 @@ function Cadastro() {
         localStorage.setItem("semestre", JSON.stringify(dadosCadastroNovos));
 
         if (!response.ok) {
-            throw new Error(data.error || "Erro ao cadastrar aluno!");
+            throw data;
         }
 
         return data;
@@ -85,7 +82,13 @@ function Cadastro() {
             await registerUser();
             handleShowModal();
         } catch (error) {
-            handleAlert(error?.message || "Erro ao cadastrar. Tente novamente.");
+            if (error?.errors) {
+                const messages = error.errors.join("\n");
+                handleAlert(messages);
+            } else {
+                const errorMessage = error?.error || error?.message || 'Erro ao cadastrar. Tente novamente.';
+                handleAlert(errorMessage);
+            }
         }
     };
 
@@ -151,14 +154,15 @@ function Cadastro() {
                                 <div className="mb-3">
                                     <div className="label-float">
                                         <Form.Control
-                                            type='number'
-                                            min={0}
-                                            max={new Date().getFullYear()}
+                                            type='text'
+                                            inputMode="numeric"
                                             id='anoIngresso'
                                             placeholder=" "
                                             required
                                             value={dados.anoIngresso}
-                                            onChange={handleChange}
+                                            onChange={e => {
+                                                setDados({ ...dados, anoIngresso: e.target.value.replace(/\D/g, '') });
+                                            }}
                                         />
                                         <label htmlFor='anoIngresso'>Ano de ingresso</label>
                                     </div>

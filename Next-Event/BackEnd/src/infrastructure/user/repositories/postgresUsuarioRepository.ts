@@ -15,6 +15,8 @@ export class PostgresUsuarioRepository implements IUsuarioRepository {
         data: {
           nome: usuario.nome,
           email: usuario.email,
+          matricula: usuario.matricula,
+          cpf: usuario.cpf,
           senha: usuario.senha,
           status: usuario.status ?? 'ATIVO',
         },

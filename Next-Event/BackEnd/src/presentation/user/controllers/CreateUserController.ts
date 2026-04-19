@@ -6,12 +6,14 @@ export class CreateUsuarioController {
 
   async handle(request: Request, response: Response): Promise<Response> {
     try {
-      const { nome, email, senha, status, coordenador, tutor, bolsista } = request.body;
+      const { nome, email, senha, matricula, cpf, status, coordenador, tutor, bolsista } = request.body;
 
       const result = await this.createUsuarioUseCase.execute({
         nome,
         email,
         senha,
+        matricula,
+        cpf,
         status,
         coordenador,
         tutor,

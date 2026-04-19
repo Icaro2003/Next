@@ -9,6 +9,8 @@ interface CreateUsuarioResponse {
     id: string;
     nome: string;
     email: string;
+    matricula?: string;
+    cpf?: string;
     status: string;
     criadoEm: Date;
     atualizadoEm: Date;
@@ -36,6 +38,8 @@ export class CreateUsuarioUseCase {
       nome: data.nome,
       email: data.email,
       senha: senhaHash,
+      matricula: data.matricula,
+      cpf: data.cpf,
       status: data.status || 'ATIVO',
       coordenador: data.coordenador
         ? {
@@ -70,6 +74,8 @@ export class CreateUsuarioUseCase {
         id: created.id,
         nome: created.nome,
         email: created.email,
+        matricula: created.matricula,
+        cpf: created.cpf,
         status: created.status,
         criadoEm: created.criadoEm,
         atualizadoEm: created.atualizadoEm,

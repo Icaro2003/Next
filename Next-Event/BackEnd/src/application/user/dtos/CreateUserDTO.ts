@@ -3,6 +3,8 @@ export interface CreateUsuarioDTO {
   nome: string;
   email: string;
   senha: string;
+  matricula?: string;
+  cpf?: string;
   status?: 'ATIVO' | 'INATIVO' | 'PENDENTE';
   coordenador?: {
     area?: string;

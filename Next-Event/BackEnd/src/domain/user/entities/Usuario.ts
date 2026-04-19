@@ -7,6 +7,8 @@ export class Usuario {
   nome!: string;
   email!: string;
   senha!: string;
+  matricula?: string;
+  cpf?: string;
   status!: UsuarioStatus;
   criadoEm!: Date;
   atualizadoEm!: Date;

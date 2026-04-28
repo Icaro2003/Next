@@ -9,12 +9,12 @@ export class CreateUsuarioController {
     try {
       const dto = request.body;
 
-      const errors = CreateUserValidator.validate(dto);
+      const error = CreateUserValidator.validate(dto);
 
-      if (errors.length > 0) {
+      if (error) {
         return response.status(400).json({
           message: 'Erro na validação do cadatro de usuário',
-          errors: errors
+          errors: [error]
         });
       }
 

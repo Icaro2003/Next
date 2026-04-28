@@ -13,6 +13,8 @@ import useAlert from '../hooks/useAlert';
 import '../css/forms.css';
 import '../css/form-pages.css';
 
+import { formatCPF } from '../utils/formatter';
+
 function Cadastro() {
     const navigate = useNavigate();
 
@@ -83,8 +85,8 @@ function Cadastro() {
             handleShowModal();
         } catch (error) {
             if (error?.errors) {
-                const messages = error.errors.join("\n");
-                handleAlert(messages);
+                const message = error.errors[0];
+                handleAlert(message);
             } else {
                 const errorMessage = error?.error || error?.message || 'Erro ao cadastrar. Tente novamente.';
                 handleAlert(errorMessage);
@@ -147,7 +149,9 @@ function Cadastro() {
                                 <div className="mb-3">
                                     <InputFlutuante
                                         type="text" id="cpf" label="CPF"
-                                        value={dados.cpf} onChange={handleChange}
+                                        value={dados.cpf} onChange={e => {
+                                            setDados({ ...dados, cpf: formatCPF(e.target.value) });
+                                        }}
                                     />
                                 </div>
 

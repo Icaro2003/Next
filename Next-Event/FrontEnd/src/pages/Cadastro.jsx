@@ -13,7 +13,7 @@ import useAlert from '../hooks/useAlert';
 import '../css/forms.css';
 import '../css/form-pages.css';
 
-import { formatCPF } from '../utils/formatter';
+import { formatCPF, formatAdmisionYear } from '../utils/formatter';
 
 function Cadastro() {
     const navigate = useNavigate();
@@ -165,7 +165,7 @@ function Cadastro() {
                                             required
                                             value={dados.anoIngresso}
                                             onChange={e => {
-                                                setDados({ ...dados, anoIngresso: e.target.value.replace(/\D/g, '') });
+                                                setDados({ ...dados, anoIngresso: formatAdmisionYear(e.target.value) });
                                             }}
                                         />
                                         <label htmlFor='anoIngresso'>Ano de ingresso</label>

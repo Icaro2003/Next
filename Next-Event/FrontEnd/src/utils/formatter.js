@@ -12,3 +12,13 @@ export function formatCPF(val) {
 
     return cpf;
 }
+
+export function formatAdmisionYear(val) {
+    if (!val) {
+        return '';
+    }   
+
+    let admissionYear = val.replace(/\D/g, '').slice(0, 4);
+
+    return admissionYear;
+}

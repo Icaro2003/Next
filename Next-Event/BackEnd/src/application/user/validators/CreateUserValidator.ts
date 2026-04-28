@@ -2,51 +2,93 @@ import { CreateUsuarioDTO } from '../dtos/CreateUserDTO';
 
 export class CreateUserValidator {
     static validate(data: CreateUsuarioDTO): string | null {
-        if (!data.nome || data.nome.trim() === '') {
+        return (
+            this.validarNome(data.nome) ||
+            this.validarEmail(data.email) ||
+            this.validarCPF(data.cpf) ||
+            this.validarAnoIngresso(data.bolsista?.anoIngresso) ||
+            this.validarCurso(data.bolsista?.curso) ||
+            this.validarSenha(data.senha) ||
+            null
+        );
+    }
+
+    static validarNome(nome?: string): string | null {
+        if (!nome || nome.trim() === '') {
             return 'Preencha o campo nome';
-        } else if (data.nome.trim().length < 3) {
+        } else if (nome.trim().length < 3) {
             return 'O nome deve conter pelo menos 3 caracteres.';
-        } else if (data.nome.trim().length > 100) {
+        } else if (nome.trim().length > 100) {
             return 'O nome não pode exceder 100 caracteres.';
         }
 
+        return null;
+    }
+
+    static validarEmail(email?: string): string | null {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        if (!data.email || data.email.trim() === '') {
+        if (!email || email.trim() === '') {
             return 'Preencha o campo e-mail'
-        } else if (!emailRegex.test(data.email)) {
+        } else if (!emailRegex.test(email)) {
             return 'E-mail inválido'
         }
 
-        if (!data.senha || data.senha.trim() === '') {
-            return 'Preencha o campo senha'
-        } else if (data.senha.length < 6) {
-            return 'A senha deve conter pelo menos 6 caracteres'
-        }
+        return null;
+    }
 
+    static validarCPF(cpf?: string): string | null {
         const cpfRegex = /^[0-9]{11}$/;
 
-        if (!data.cpf || data.cpf.trim() === '') {
+        if (!cpf || cpf.trim() === '') {
             return 'Preencha o campo cpf';
-        } else if (!cpfRegex.test(data.cpf)) {
+        } else if (!cpfRegex.test(cpf)) {
             return 'O cpf deve conter 11 dígitos';
         }
 
+        return null;
+    }
+
+    static validarAnoIngresso(anoIngresso?: number): string | null {
         const anoIngressoRegex = /^[0-9]{4}$/;
 
-        if (!data.bolsista?.anoIngresso || data.bolsista.anoIngresso > new Date().getFullYear()) {
+        if (!anoIngresso) {
             return 'Preencha o campo ano de ingresso';
-        } else if (!anoIngressoRegex.test(data.bolsista.anoIngresso.toString())) {
+        } else if (anoIngresso > new Date().getFullYear()) {
+            return 'Ano de ingresso inválido';
+        } else if (anoIngresso.toString().length !== 4) {
             return 'O ano de ingresso deve conter 4 dígitos';
         }
 
+        if (!anoIngressoRegex.test(anoIngresso.toString())) {
+            return 'O ano de ingresso deve conter 4 dígitos';
+        }
+
+        return null;
+    }
+
+
+    static validarCurso(curso?: string): string | null {
         const cursoRegex = /^[A-Za-zÀ-ÿ\s]+$/;
-        if (!data.bolsista?.curso || data.bolsista.curso.trim() === '') {
+
+        if (!curso || curso.trim() === '') {
             return 'Preencha o campo curso';
-        } else if (!cursoRegex.test(data.bolsista.curso.trim())) {
+        } else if (!cursoRegex.test(curso.trim())) {
             return 'O curso deve conter apenas letras';
-        } else if (data.bolsista.curso.trim().length < 10) {
+        } else if (curso.trim().length < 10) {
             return 'O curso deve conter pelo menos 10 caracteres';
+        }
+
+        return null;
+    }
+
+    static validarSenha(senha?: string): string | null {
+        if (!senha || senha.trim() === '') {
+            return 'Preencha o campo senha';
+        }
+
+        if (senha.length < 6) {
+            return 'A senha deve conter pelo menos 6 caracteres';
         }
 
         return null;

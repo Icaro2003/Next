@@ -38,11 +38,13 @@ export class CreateUserValidator {
     }
 
     static validarCPF(cpf?: string): string | null {
-        const cpfRegex = /^[0-9]{11}$/;
-
         if (!cpf || cpf.trim() === '') {
             return 'Preencha o campo cpf';
-        } else if (!cpfRegex.test(cpf)) {
+        }
+
+        const cleanCPF = cpf.replace(/\D/g, '');
+
+        if (cleanCPF.length !== 11) {
             return 'O cpf deve conter 11 dígitos';
         }
 

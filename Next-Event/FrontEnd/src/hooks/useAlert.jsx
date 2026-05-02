@@ -4,12 +4,12 @@ export default function useAlert() {
     const [show, setShow] = useState(false);
     const [message, setMessage] = useState("");
     const [variant, setVarient] = useState("");
-    const [key, setKey] = useState("");
+    const [alertKey, setAlertKey] = useState("");
 
     function handleAlert(msg, type = "danger") {
         setMessage(msg);
         setVarient(type);
-        setKey(type);
+        setAlertKey(Date.now().toString());
         setShow(true);
     }
 
@@ -18,7 +18,7 @@ export default function useAlert() {
         setShow,
         message,
         variant,
-        key,
+        alertKey,
         handleAlert
     };
 

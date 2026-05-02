@@ -81,6 +81,10 @@ function Cadastro() {
         e.preventDefault();
 
         try {
+            if (dados.senha.trim() !== dados.confirmarSenha.trim()) {
+                throw new Error("As senhas devem ser iguais!");
+            }
+
             await registerUser();
             handleShowModal();
         } catch (error) {
@@ -234,7 +238,7 @@ function Cadastro() {
                                     show={show}
                                     message={message}
                                     variant={variant}
-                                    key={alertKey}
+                                    alertKey={alertKey}
                                 />
 
                                 <div className="py-2">

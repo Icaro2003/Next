@@ -28,6 +28,22 @@ export class CreateUsuarioUseCase {
     if (!data.email) throw new Error('Email é obrigatório');
     if (!data.senha) throw new Error('Senha é obrigatória');
 
+    if (data.matricula) {
+      const matriculaExists = await this.usuarioRepository.findByMatricula(data.matricula);
+
+      if (matriculaExists) {
+        throw new Error('Esta matrícula já está cadastrada');
+      }
+    }
+    
+    if (data.cpf) {
+      const cpfExists = await this.usuarioRepository.findByCpf(data.cpf);
+
+      if (cpfExists) {
+        throw new Error('Este CPF já está cadastrado');
+      }
+    }
+
     const usuarioExists = await this.usuarioRepository.findByEmail(data.email);
     if (usuarioExists) throw new Error('Usuário já existe');
 

@@ -77,6 +77,30 @@ export class PostgresUsuarioRepository implements IUsuarioRepository {
     });
     return usuario ? this.mapToUsuario(usuario) : null;
   }
+  
+  async findByMatricula(matricula: string): Promise<Usuario | null> {
+    const usuario = await this.prisma.usuario.findUnique({
+      where: { matricula },
+      include: {
+        coordenador: true,
+        tutor: true,
+        bolsista: true,
+      }
+    });
+    return usuario ? this.mapToUsuario(usuario) : null;
+  }
+  
+  async findByCpf(cpf: string): Promise<Usuario | null> {
+    const usuario = await this.prisma.usuario.findUnique({
+      where: { cpf },
+      include: {
+        coordenador: true,
+        tutor: true,
+        bolsista: true,
+      }
+    });
+    return usuario ? this.mapToUsuario(usuario) : null;
+  }
 
   async findById(id: string): Promise<Usuario | null> {
     const usuario = await this.prisma.usuario.findUnique({

@@ -39,13 +39,13 @@ export class CreateUserValidator {
 
     static validarCPF(cpf?: string): string | null {
         if (!cpf || cpf.trim() === '') {
-            return 'Preencha o campo cpf';
+            return 'Preencha o campo CPF';
         }
 
         const cleanCPF = cpf.replace(/\D/g, '');
 
         if (cleanCPF.length !== 11) {
-            return 'O cpf deve conter 11 dígitos';
+            return 'O CPF deve conter 11 dígitos';
         }
 
         return null;

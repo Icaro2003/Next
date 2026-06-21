@@ -10,6 +10,8 @@ require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
+console.log("DEBUG PLAYWRIGHT CONFIG - process.env.BASE_URL:", process.env.BASE_URL);
+
 export default defineConfig({
   testDir: './tests',
   /* Run tests in files in parallel */
@@ -35,18 +37,31 @@ export default defineConfig({
 
   /* Configure projects for major browsers */
   projects: [
+    // ─── Projeto exclusivo para testes de API ───────────────────────────
+    {
+      name: 'api',
+      testMatch: '**/tests/api/**/*.spec.ts',
+      use: {
+        baseURL: process.env.API_URL || 'http://localhost:3000',
+      },
+    },
+
+    // ─── Projetos de browser (apenas testes de UI) ─────────────────────
     {
       name: 'chromium',
+      testMatch: '**/tests/ui/**/*.spec.ts',
       use: { ...devices['Desktop Chrome'] },
     },
 
     {
       name: 'firefox',
+      testMatch: '**/tests/ui/**/*.spec.ts',
       use: { ...devices['Desktop Firefox'] },
     },
 
     {
       name: 'webkit',
+      testMatch: '**/tests/ui/**/*.spec.ts',
       use: { ...devices['Desktop Safari'] },
     },
 

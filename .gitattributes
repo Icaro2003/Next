@@ -1,0 +1,18 @@
+# Normalização de fim de linha para arquivos de texto
+* text=auto
+
+# Tratar arquivos binários como binários (sem normalização CRLF/LF)
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary

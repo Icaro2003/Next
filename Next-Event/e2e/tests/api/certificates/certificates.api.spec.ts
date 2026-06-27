@@ -25,6 +25,9 @@ test.describe('API - Gerenciamento de Certificados', () => {
   const txtPath = path.resolve(__dirname, '../../../support/assets/sample.txt');
 
   test.beforeEach(async ({ userClient, cleanupService }) => {
+    // 0. Garantir que existe um período de tutoria ativo (necessário para upload de certificados)
+    await DbHelper.ensurePeriodoTutoria('API Certificates Periodo E2E');
+
     // 1. Criar bolsista
     bolsistaUser = buildUserPayload();
     cleanupService.addEmail(bolsistaUser.email);

@@ -20,7 +20,6 @@ const formAcompanhamentoService = {
     },
 
     async listByTutor(tutorId, token) {
-        // Nota: O backend pode precisar de filtros específicos para listagem por tutor
         const response = await fetch(`${API_URL}/form-acompanhamento?tutorId=${tutorId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });

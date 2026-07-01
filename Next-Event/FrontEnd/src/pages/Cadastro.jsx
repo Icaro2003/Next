@@ -14,7 +14,7 @@ import useAlert from '../hooks/useAlert';
 import '../css/forms.css';
 import '../css/form-pages.css';
 
-import { formatCPF, formatAdmisionYear } from '../utils/formatter';
+import { formatCPF, formatAdmisionYear, formatMatricula, formatSemester } from '../utils/formatter';
 
 function Cadastro() {
     const navigate = useNavigate();
@@ -127,7 +127,7 @@ function Cadastro() {
 
                                 <h2 className="text-primary fw-bold mb-2" style={{ fontSize: '2.5rem' }}>Cadastre-se</h2>
                                 <p className="mb-4 text-muted">
-                                    Já tem cadastro? <Link to="/" className="text-decoration-none fw-bold">Faça login!</Link>
+                                    Já tem cadastro? <Link to="/" className="text-decoration-none">Faça login!</Link>
                                 </p>
 
                                 <div className="mb-3">
@@ -140,7 +140,9 @@ function Cadastro() {
                                 <div className="mb-3">
                                     <InputFlutuante
                                         type="text" id="matricula" label="Matrícula"
-                                        value={dados.matricula} onChange={handleChange}
+                                        value={dados.matricula} onChange={e => {
+                                            setDados({ ...dados, matricula: formatMatricula(e.target.value) });
+                                        }}
                                     />
                                 </div>
 
@@ -178,22 +180,20 @@ function Cadastro() {
                                 </div>
 
                                 <div className="mb-3">
-                                    <Form.Select
-                                        required
-                                        id='semestre'
-                                        className='label-float'
-                                        value={dados.semestre}
-                                        onChange={handleChange}
-                                        style={
-                                            {
-                                                border: '1px solid #8C8B8B',
-                                                borderRadius: '20px'
-                                            }
-                                        }>
-                                        <option value="">Selecione o semestre</option>
-                                        <option value="1">1º Semestre</option>
-                                        <option value="2">2º Semestre</option>
-                                    </Form.Select>
+                                    <div className="label-float">
+                                        <Form.Control
+                                            type='text'
+                                            inputMode="numeric"
+                                            id='semester'
+                                            placeholder=" "
+                                            required
+                                            value={dados.semestre}
+                                            onChange={e => {
+                                                setDados({ ...dados, semestre: formatSemester(e.target.value) });
+                                            }}
+                                        />
+                                        <label htmlFor='semester'>Semestre</label>
+                                    </div>
                                 </div>
 
                                 <div className="mb-3">
@@ -242,10 +242,9 @@ function Cadastro() {
                                     alertKey={alertKey}
                                 />
 
-                                <div className="py-2">
+                                <div className="mb-3">
                                     <BotaoPrincipal texto="Cadastrar" type="submit" />
                                 </div>
-
                             </Form>
                         </div>
                     </Col>

@@ -191,7 +191,7 @@ function MeusCertificados() {
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse id="basic-navbar-nav">
                         <Nav className="text-center mx-auto fw-medium">
-                            <Nav.Link onClick={() => navigate('/bolsista')} className="mx-2 text-dark">Home</Nav.Link>
+                            <Nav.Link onClick={() => navigate('/aluno')} className="mx-2 text-dark">Home</Nav.Link>
                             <Nav.Link className="mx-2 text-dark fw-bold">Certificados</Nav.Link>
                             <Nav.Link onClick={() => navigate('/avaliacao-tutoria')} className="mx-2 text-dark">Avaliação Tutoria</Nav.Link>
                         </Nav>

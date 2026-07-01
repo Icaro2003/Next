@@ -7,27 +7,27 @@ import { DbHelper } from './database/dbHelper';
 export class CleanupService {
   private emailsToDelete: Set<string> = new Set();
 
-  /**
-   * Registra um email para ser removido no final do teste.
-   */
   addEmail(email: string) {
     this.emailsToDelete.add(email);
   }
 
-  /**
-   * Executa a limpeza de todos os itens registrados.
-   */
   async cleanup() {
     const emails = Array.from(this.emailsToDelete);
     if (emails.length === 0) return;
 
     console.log(`[Cleanup] Iniciando limpeza de ${emails.length} registro(s)...`);
-    
-    // Executa as deleções em paralelo para maior performance
-    await Promise.all(
+
+    const results = await Promise.allSettled(
       emails.map((email) => DbHelper.deleteUserByEmail(email))
     );
+
+    const failures = results.filter((result) => result.status === 'rejected');
+    if (failures.length > 0) {
+      console.warn(`[Cleanup] ${failures.length} remoção(ões) falharam.`);
+    }
 
     this.emailsToDelete.clear();
   }
 }
+
+export const globalCleanupService = new CleanupService();

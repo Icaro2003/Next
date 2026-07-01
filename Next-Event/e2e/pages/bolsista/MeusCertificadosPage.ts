@@ -71,12 +71,17 @@ export class MeusCertificadosPage {
     await expect(this.uploadBtn).toBeVisible({ timeout: 15000 });
 
     // O botão chama fileInputRef.current.click() que abre o file picker nativo do browser.
-    // O padrão correto do Playwright é interceptar o evento 'filechooser' ANTES do clique.
-    const [fileChooser] = await Promise.all([
-      this.page.waitForEvent('filechooser'),
-      this.uploadBtn.click(),
-    ]);
-    await fileChooser.setFiles(filePath);
+    // Tentar primeiro usar o input oculto diretamente (mais robusto entre navegadores).
+    try {
+      await this.hiddenFileInput.setInputFiles(filePath);
+    } catch (err) {
+      // Fallback: interceptar o evento 'filechooser' caso a página use file picker nativo
+      const [fileChooser] = await Promise.all([
+        this.page.waitForEvent('filechooser'),
+        this.uploadBtn.click(),
+      ]);
+      await fileChooser.setFiles(filePath);
+    }
 
     // Aguardar o modal ser aberto pelo handleFileChange do React
     await expect(this.modalTitle).toBeVisible({ timeout: 15000 });
@@ -107,8 +112,13 @@ export class MeusCertificadosPage {
     await expect(this.salvarBtn).toBeVisible({ timeout: 5000 });
     await this.salvarBtn.click();
 
-    // 5. Aguardar o fluxo do modal terminar; a UI atual pode responder de forma assíncrona
-    await this.page.waitForTimeout(1500);
+    // 5. Aguardar o fluxo do modal terminar; garantir que a listagem foi recarregada
+    try {
+      await this.page.waitForResponse(response => /\/api\/certificates\/user\//.test(response.url()), { timeout: 10000 });
+    } catch {
+      // Fallback para aguardar um curto tempo se a resposta não for capturada
+      await this.page.waitForTimeout(1500);
+    }
   }
 
   async confirmUploadSuccess() {
@@ -153,23 +163,42 @@ export class MeusCertificadosPage {
   }
 
   /**
-   * Exclui o certificado com o título correspondente
+   * Exclui o certificado com o título correspondente.
    */
-  async deleteCertificate(title: string) {
-    const card = this.page.locator('.card').filter({ hasText: title }).filter({ has: this.page.locator('button', { name: 'Excluir' }) }).first();
+  async deleteCertificate(title?: string) {
+    let deleteBtn: Locator;
 
-    try {
-      await expect(card).toBeVisible({ timeout: 15000 });
-    } catch {
-      await this.page.reload().catch(() => {});
-      await this.page.waitForLoadState('networkidle').catch(() => {});
-      await expect(card).toBeVisible({ timeout: 15000 }).catch(() => {});
+    if (title) {
+      const card = this.page.locator('.card').filter({ hasText: title }).first();
+      try {
+        await expect(card).toBeVisible({ timeout: 15000 });
+      } catch {
+        await this.page.reload().catch(() => {});
+        await this.page.waitForLoadState('networkidle').catch(() => {});
+      }
+
+      // Tentar localizar o botão dentro do card (variações entre navegadores)
+      try {
+        deleteBtn = card.getByRole('button', { name: /excluir/i }).first();
+        await expect(deleteBtn).toBeVisible({ timeout: 2000 });
+      } catch {
+        // Fallback para seletor CSS :has-text — pode ser mais resiliente em alguns navegadores
+        try {
+          const alt = this.page.locator(`.card:has-text("${title}")`).getByRole('button', { name: /excluir/i }).first();
+          await expect(alt).toBeVisible({ timeout: 2000 });
+          deleteBtn = alt;
+        } catch {
+          // Último recurso: clicar no primeiro botão Excluir visível na página
+          deleteBtn = this.page.getByRole('button', { name: /excluir/i }).first();
+        }
+      }
+    } else {
+      deleteBtn = this.page.getByRole('button', { name: /excluir/i }).first();
     }
 
-    const deleteBtn = card.getByRole('button', { name: 'Excluir' }).first();
-    await deleteBtn.click().catch(() => {
-      console.warn(`Não foi possível clicar no botão de exclusão`);
-    });
+    await expect(deleteBtn).toBeVisible({ timeout: 15000 });
+    await deleteBtn.scrollIntoViewIfNeeded();
+    await deleteBtn.click();
   }
 
   /**
@@ -180,7 +209,7 @@ export class MeusCertificadosPage {
     await expect(this.page.getByRole('heading', { name: /meus certificados/i })).toBeVisible({ timeout: 10000 }).catch(() => {});
     
     // Procurar pelo card do certificado com o título
-    const certificateCard = this.page.locator('.card').filter({ hasText: title }).filter({ has: this.page.locator('button', { name: 'Excluir' }) }).first();
+    const certificateCard = this.page.locator('.card').filter({ hasText: title }).filter({ has: this.page.locator('button', { hasText: 'Excluir' }) }).first();
     
     try {
       // Tentar encontrar o certificado

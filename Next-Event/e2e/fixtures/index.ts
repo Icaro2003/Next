@@ -9,7 +9,7 @@ import { CoordenadorPage } from '../pages/coordenador/CoordenadorPage';
 import { UserClient } from '../clients/UserClient';
 import { CertificateClient } from '../clients/CertificateClient';
 import { AvaliacaoClient } from '../clients/AvaliacaoClient';
-import { CleanupService } from '../support/CleanupService';
+import { CleanupService, globalCleanupService } from '../support/CleanupService';
 
 /**
  * Fixtures Unificadas.
@@ -33,9 +33,8 @@ type MyFixtures = {
 export const test = base.extend<MyFixtures>({
   // Fixture de Serviço de Limpeza (Teardown Automático)
   cleanupService: async ({}, use) => {
-    const service = new CleanupService();
+    const service = globalCleanupService;
     await use(service);
-    await service.cleanup(); // Executa a limpeza após cada teste
   },
 
   // Fixtures de API Clients

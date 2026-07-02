@@ -62,9 +62,9 @@ export class CoordenadorPage {
 
     // Atribuir Papel Page
     this.usersTable = page.locator('table');
-    this.roleSelect = page.locator('select');
-    this.confirmarAlteracoesBtn = page.getByRole('button', { name: 'Confirmar Alterações' });
-    this.removerPapelBtn = page.getByRole('button', { name: 'Remover Papel' });
+    this.roleSelect = page.locator('div.modal.show select');
+    this.confirmarAlteracoesBtn = page.locator('div.modal.show').getByRole('button', { name: /Confirmar Alterações/i });
+    this.removerPapelBtn = page.locator('div.modal.show').getByRole('button', { name: /Remover Papel/i });
   }
 
   async navigateToHome() {
@@ -90,28 +90,40 @@ export class CoordenadorPage {
     } else if (tab === 'negado') {
       await this.negadosTab.click();
     }
+    // Aguardar o spinner de carregamento sumir (dados carregados da API)
+    await this.page.locator('.spinner-border').waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
   }
 
-  async aprovarCertificado(title: string) {
-    const card = this.certCards.filter({ hasText: title });
+  async aprovarCertificado(studentName: string) {
+    const card = this.certCards.filter({ hasText: studentName });
     await expect(card).toBeVisible({ timeout: 15000 });
-    
-    // Escutando alerta de aprovação
-    this.page.once('dialog', async dialog => {
-      expect(dialog.message()).toContain('aprovado com sucesso');
-      await dialog.accept();
+
+    // Registrar o listener ANTES do clique e aguardar a resolução do dialog
+    // para evitar que o handler seja consumido por um dialog subsequente.
+    const dialogHandled = new Promise<void>(resolve => {
+      this.page.once('dialog', async dialog => {
+        expect(dialog.message()).toContain('aprovado com sucesso');
+        await dialog.accept();
+        resolve();
+      });
     });
 
     await card.getByRole('button', { name: /aprovar/i }).click();
+    await dialogHandled;
   }
 
-  async negarCertificado(title: string, motivo: string) {
-    const card = this.certCards.filter({ hasText: title });
+  async negarCertificado(studentName: string, motivo: string) {
+    const card = this.certCards.filter({ hasText: studentName });
     await expect(card).toBeVisible({ timeout: 15000 });
     await card.getByRole('button', { name: /negar/i }).click();
 
-    await expect(this.modalTitle).toBeVisible();
+    // Aguardar o modal estar completamente visível e interativo
+    await expect(this.modalTitle).toBeVisible({ timeout: 10000 });
+    await this.motivoInput.waitFor({ state: 'visible', timeout: 10000 });
     await this.motivoInput.fill(motivo);
+
+    // Aguardar o botão estar visível e habilitado antes de clicar
+    await this.confirmarReprovacaoBtn.waitFor({ state: 'visible', timeout: 10000 });
 
     // Escutando alerta de rejeição
     this.page.once('dialog', async dialog => {
@@ -120,34 +132,54 @@ export class CoordenadorPage {
     });
 
     await this.confirmarReprovacaoBtn.click();
+    // Aguardar o modal fechar completamente antes de prosseguir
+    await this.page.locator('.modal.show').waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
+    await this.page.waitForTimeout(500);
   }
 
-  async reverterCertificado(title: string) {
-    const card = this.certCards.filter({ hasText: title });
-    await expect(card).toBeVisible({ timeout: 15000 });
-    
-    // Escutando alerta de reversão
-    this.page.once('dialog', async dialog => {
-      expect(dialog.message()).toContain('revertido para pendente');
-      await dialog.accept();
+  async reverterCertificado(studentName: string) {
+    const approvedCard = this.page.locator('.card.border-success', { hasText: studentName });
+    await expect(approvedCard).toBeVisible({ timeout: 15000 });
+
+    // Registrar o listener ANTES do clique e aguardar resolução explícita,
+    // garantindo que este handler não seja consumido por dialogs anteriores.
+    const dialogHandled = new Promise<void>(resolve => {
+      this.page.once('dialog', async dialog => {
+        expect(dialog.message()).toContain('revertido para pendente');
+        await dialog.accept();
+        resolve();
+      });
     });
 
-    await card.getByRole('button', { name: /reverter para pendente/i }).click();
+    await approvedCard.getByRole('button', { name: /reverter para pendente/i }).click();
+    await dialogHandled;
+    // Aguardar o card sumir da aba atual (indica que o servidor processou a reversão)
+    await expect(approvedCard).not.toBeVisible({ timeout: 15000 });
   }
 
   async atribuirPapel(email: string, papel: 'tutor' | 'bolsista' | 'coordenador') {
-    const row = this.page.locator('tr', { hasText: email });
+    const row = this.page.locator('table tbody tr', { hasText: email });
     await expect(row).toBeVisible({ timeout: 15000 });
     await row.getByRole('button', { name: /alterar papel/i }).click();
 
+    const modal = this.page.locator('div.modal.show');
+    await expect(modal).toBeVisible({ timeout: 15000 });
+    await expect(this.roleSelect).toBeVisible({ timeout: 15000 });
     await this.roleSelect.selectOption(papel);
 
-    // Escutando alerta de sucesso da atribuição
     this.page.once('dialog', async dialog => {
       expect(dialog.message()).toContain('executado com sucesso');
       await dialog.accept();
     });
 
-    await this.confirmarAlteracoesBtn.click();
+    const [response] = await Promise.all([
+      this.page.waitForResponse(resp =>
+        resp.url().includes('/api/users/') && resp.request().method() === 'PATCH'
+      ),
+      this.confirmarAlteracoesBtn.click()
+    ]);
+
+    expect(response.status()).toBe(204);
+    await expect(modal).toBeHidden({ timeout: 15000 }).catch(() => {});
   }
 }

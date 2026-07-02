@@ -1,11 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
+import path from 'path';
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
  */
-import path from 'path';
-require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -14,20 +14,23 @@ console.log("DEBUG PLAYWRIGHT CONFIG - process.env.BASE_URL:", process.env.BASE_
 
 export default defineConfig({
   testDir: './tests',
-  /* Run tests in files in parallel */
-  fullyParallel: true,
+  globalTeardown: './global-teardown.ts',
+  /* Timeout global por teste: aumentado para cenários de UI mais complexos */
+  timeout: 60000,
+  /* Evita corrida de estado compartilhado entre specs e browsers */
+  fullyParallel: false,
+  workers: 1,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: [['html'], ['list'], ['./reporters/cleanupReporter.ts']],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
-    baseURL: process.env.BASE_URL || 'http://localhost:4000',
+    baseURL: process.env.BASE_URL || 'http://127.0.0.1:4000',
 
     /* Collect trace on failure */
     trace: 'retain-on-failure',
@@ -42,7 +45,7 @@ export default defineConfig({
       name: 'api',
       testMatch: '**/tests/api/**/*.spec.ts',
       use: {
-        baseURL: process.env.API_URL || 'http://localhost:3000',
+        baseURL: process.env.API_URL || 'http://127.0.0.1:3000',
       },
     },
 

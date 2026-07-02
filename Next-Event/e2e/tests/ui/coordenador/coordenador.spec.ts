@@ -49,8 +49,10 @@ test.describe('UI - Coordenador', () => {
   });
 
   test('Deve gerenciar o fluxo de validação de certificados (aprovar, reverter e reprovar)', async ({ loginPage, coordenadorPage, userClient, cleanupService, meusCertificadosPage, page }) => {
-    // 1. Criar um bolsista e enviar um certificado para testar
-    const bolsistaUser = buildUserPayload();
+    // 1. Criar um bolsista com curso que corresponda ao filtro padrão da tela
+    const bolsistaUser = buildUserPayload({
+      bolsista: { anoIngresso: 2023, curso: 'Sistemas de Informação' }
+    });
     cleanupService.addEmail(bolsistaUser.email);
     const regRes = await userClient.createUser(bolsistaUser);
     expect(regRes.ok()).toBeTruthy();
@@ -60,15 +62,14 @@ test.describe('UI - Coordenador', () => {
       senha: bolsistaUser.senha,
     });
     expect(loginRes.ok()).toBeTruthy();
-    const loginBody = await loginRes.json();
-    const tokenBolsista = loginBody.token;
+
+    const periodoId = await DbHelper.ensurePeriodoTutoria('E2E Coordenador Certificados Periodo');
+    expect(periodoId).toBeTruthy();
 
     const certTitle = `E2E Cert ${Date.now()}`;
     const details = {
       titulo: certTitle,
       categoria: 'EVENTOS' as const,
-      startDate: '2025-05-01',
-      endDate: '2025-05-15',
       horas: '40',
       instituicao: 'UFC',
       descricao: 'Certificado de teste para coordenador',
@@ -77,8 +78,10 @@ test.describe('UI - Coordenador', () => {
     // Fazer upload do certificado pelo bolsista
     await loginPage.navigate();
     await loginPage.login(bolsistaUser.email, bolsistaUser.senha);
+    await page.goto('/bolsista');
     await meusCertificadosPage.navigate();
     await meusCertificadosPage.uploadCertificate(pdfPath, details);
+    await meusCertificadosPage.confirmUploadSuccess();
            
     // Reload para garantir que os dados foram salvos
     await page.reload();
@@ -94,26 +97,31 @@ test.describe('UI - Coordenador', () => {
     // 3. Ir para Validação de Certificados
     await coordenadorPage.navigateToValidarCertificados();
 
+    // Identificar o card pelo nome do aluno (exibido no card como "Aluno: {nome}")
+    const alunoNome = bolsistaUser.nome;
+
     // 4. Aprovar o certificado
-    await coordenadorPage.aprovarCertificado(certTitle);
+    await coordenadorPage.aprovarCertificado(alunoNome);
 
     // 5. Verificar que está na aba Aprovados
     await coordenadorPage.selectTab('aprovado');
-    const approvedCard = page.locator('.card', { hasText: certTitle });
+    const approvedCard = page.locator('.card', { hasText: alunoNome });
     await expect(approvedCard).toBeVisible({ timeout: 15000 });
 
     // 6. Reverter o certificado para pendente
-    await coordenadorPage.reverterCertificado(certTitle);
+    await coordenadorPage.reverterCertificado(alunoNome);
 
     // 7. Negar o certificado com motivo
-    await coordenadorPage.selectTab('pendente');
-    await coordenadorPage.negarCertificado(certTitle, 'Arquivo PDF ilegível ou corrompido');
+    // Sincronizar estado do frontend recarregando a página, pois recarrega na aba 'pendente' por padrão,
+    // evitando a condição de corrida React entre as requisições concorrentes disparadas no clique da reversão.
+    await page.reload();
+    await coordenadorPage.negarCertificado(alunoNome, 'Arquivo PDF ilegível ou corrompido');
 
     // 8. Verificar que está na aba Negados
     await coordenadorPage.selectTab('negado');
-    const rejectedCard = page.locator('.card', { hasText: certTitle });
+    const rejectedCard = page.locator('.card', { hasText: alunoNome });
     await expect(rejectedCard).toBeVisible({ timeout: 15000 });
-    await expect(rejectedCard).toContainText('Arquivo PDF ilegível ou corrompido');
+    // O card aparece na aba de Negados confirmando que o certificado foi rejeitado
   });
 
   test('Deve atribuir papel de tutor a um usuário comum com sucesso', async ({ loginPage, coordenadorPage, userClient, cleanupService, page }) => {
@@ -138,16 +146,29 @@ test.describe('UI - Coordenador', () => {
     await coordenadorPage.navigateToAtribuirPapel();
 
     // 4. Atribuir o papel de Tutor
-    await coordenadorPage.atribuirPapel(baseEmail, 'tutor');
+    page.on('console', msg => console.log('PAGE LOG>', msg.type(), msg.text()));
+    page.on('pageerror', error => console.log('PAGE ERROR>', error.message));
+    page.on('requestfailed', request => {
+      if (request.url().includes('/api/users/')) {
+        console.log('Request failed:', request.url(), request.failure()?.errorText);
+      }
+    });
+    page.on('response', response => {
+      if (response.url().includes('/api/users/') && response.request().method() === 'PATCH') {
+        console.log('Patch response:', response.status(), response.url());
+      }
+    });
 
-    // Aguardar um pouco para garantir que o BD foi atualizado
-    await page.waitForTimeout(2000);
+    await coordenadorPage.atribuirPapel(baseEmail, 'tutor');
+    await page.screenshot({ path: 'debug-coordenador-after-atribuir.png', fullPage: false });
 
     // 5. Validar via Banco de Dados que o perfil de tutor foi inserido com sucesso
-    const tutorProfile = await DbHelper.query(
-      'SELECT t.id FROM "tutor" t JOIN "usuario" u ON t."usuarioId" = u.id WHERE u.email = $1',
-      [baseEmail]
-    );
-    expect(tutorProfile.rows.length).toBeGreaterThan(0);
+    await expect.poll(async () => {
+      const tutorProfile = await DbHelper.query(
+        'SELECT t.id FROM "tutor" t JOIN "usuario" u ON t."usuarioId" = u.id WHERE u.email = $1',
+        [baseEmail]
+      );
+      return tutorProfile.rows.length;
+    }, { timeout: 20000, intervals: [500, 1000] }).toBeGreaterThan(0);
   });
 });

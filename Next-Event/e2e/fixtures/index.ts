@@ -9,7 +9,8 @@ import { CoordenadorPage } from '../pages/coordenador/CoordenadorPage';
 import { UserClient } from '../clients/UserClient';
 import { CertificateClient } from '../clients/CertificateClient';
 import { AvaliacaoClient } from '../clients/AvaliacaoClient';
-import { CleanupService } from '../support/CleanupService';
+import { CleanupService, globalCleanupService } from '../support/CleanupService';
+import { ensureBackendReady } from '../support/backendHelper';
 
 /**
  * Fixtures Unificadas.
@@ -33,31 +34,33 @@ type MyFixtures = {
 export const test = base.extend<MyFixtures>({
   // Fixture de Serviço de Limpeza (Teardown Automático)
   cleanupService: async ({}, use) => {
-    const service = new CleanupService();
+    const service = globalCleanupService;
     await use(service);
-    await service.cleanup(); // Executa a limpeza após cada teste
   },
 
   // Fixtures de API Clients
   userClient: async ({ playwright }, use) => {
+    await ensureBackendReady();
     const apiRequest = await playwright.request.newContext({
-      baseURL: process.env.API_URL || 'http://localhost:3000',
+      baseURL: process.env.API_URL || 'http://127.0.0.1:3000',
     });
     await use(new UserClient(apiRequest));
     await apiRequest.dispose();
   },
 
   certificateClient: async ({ playwright }, use) => {
+    await ensureBackendReady();
     const apiRequest = await playwright.request.newContext({
-      baseURL: process.env.API_URL || 'http://localhost:3000',
+      baseURL: process.env.API_URL || 'http://127.0.0.1:3000',
     });
     await use(new CertificateClient(apiRequest));
     await apiRequest.dispose();
   },
 
   avaliacaoClient: async ({ playwright }, use) => {
+    await ensureBackendReady();
     const apiRequest = await playwright.request.newContext({
-      baseURL: process.env.API_URL || 'http://localhost:3000',
+      baseURL: process.env.API_URL || 'http://127.0.0.1:3000',
     });
     await use(new AvaliacaoClient(apiRequest));
     await apiRequest.dispose();

@@ -32,3 +32,23 @@ export function formatWorkload(val) {
 
     return workload;
 }
+
+export function formatMatricula(val) {
+    if (!val) {
+        return '';
+    }
+
+    const matricula = val.replace(/\D/g, '').slice(0, 6);
+    
+    return matricula;
+}
+
+export function formatSemester(val) {
+    if (!val) {
+        return '';
+    }
+
+    const semester = val.replace(/\D/g, '').slice(0, 2);
+    
+    return semester;
+}

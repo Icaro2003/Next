@@ -155,7 +155,7 @@ function AvaliacaoTutoria() {
         try {
             await avaliacaoTutoriaService.createAvaliacaoTutoria(payload, token);
             alert(`Avaliação enviada com sucesso!`);
-            navigate('/bolsista');
+            navigate('/aluno');
         } catch (error) {
             alert(error.message);
         }

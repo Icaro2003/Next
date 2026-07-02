@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthenticatedUser from '../hooks/useAuthenticatedUser';
 
-function HomeBolsista() {
+function HomeAluno() {
     const navigate = useNavigate();
     const { usuario, userRole, handleLogout } = useAuthenticatedUser();
 
@@ -38,7 +38,7 @@ function HomeBolsista() {
 
                     <Navbar.Collapse id="basic-navbar-nav">
                         <Nav className="text-center mx-auto fw-medium mb-2">
-                            <Nav.Link onClick={() => navigate('/bolsista')} className="mx-2 text-dark fw-bold">Home</Nav.Link>
+                            <Nav.Link onClick={() => navigate('/aluno')} className="mx-2 text-dark fw-bold">Home</Nav.Link>
                             <Nav.Link onClick={() => navigate('/meus-certificados')} className="mx-2 text-dark">Certificados</Nav.Link>
                             <Nav.Link onClick={() => navigate('/avaliacao-tutoria')} className="mx-2 text-dark">Avaliação Tutoria</Nav.Link>
                         </Nav>
@@ -143,4 +143,4 @@ function HomeBolsista() {
     );
 }
 
-export default HomeBolsista;
+export default HomeAluno;

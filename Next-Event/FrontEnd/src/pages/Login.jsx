@@ -45,7 +45,7 @@ function Login() {
 
         if (!route) {
             console.log(`Rota desconhecida: ${role}`);
-            
+
             return;
         }
 
@@ -60,7 +60,7 @@ function Login() {
 
         try {
             const data = await login();
-            
+
             const decoded = jwtDecode(data.token);
             const dadosSalvos = JSON.parse(localStorage.getItem("semestre"));
 
@@ -69,7 +69,7 @@ function Login() {
                 semestre: dadosSalvos?.semestre,
                 role: decoded.role
             }));
-            
+
             navigateRole(decoded.role);
         } catch (error) {
             handleAlert(error.message);
@@ -125,18 +125,6 @@ function Login() {
                                     />
                                 </div>
 
-                                <div className="d-flex align-items-center justify-content-between mt-3 mb-3">
-                                    <Form.Check
-                                        type="checkbox"
-                                        label="Lembrar-me"
-                                        className="remember"
-                                        id='remember'
-                                    />
-                                    <Link to="/redefinir-senha" className="text-decoration-none small">
-                                        Esqueceu a senha?
-                                    </Link>
-                                </div>
-
                                 <AlertBox
                                     show={show}
                                     message={message}
@@ -144,7 +132,7 @@ function Login() {
                                     key={alertKey}
                                 />
 
-                                <div className="py-2">
+                                <div className="mb-3">
                                     <BotaoPrincipal
                                         texto="Fazer Login"
                                         type="submit"

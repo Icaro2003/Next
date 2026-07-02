@@ -48,7 +48,7 @@ function RegistroTutores() {
 
                     <Navbar.Collapse id="basic-navbar-nav">
                         <Nav className="text-center mx-auto fw-medium mb-2">
-                            <Nav.Link onClick={() => navigate(userRole(usuario.role)?.toLowerCase() === 'coordenador' ? '/coordenador' : '/bolsista')} className="mx-2 text-dark">Home</Nav.Link>
+                            <Nav.Link onClick={() => navigate(userRole(usuario.role)?.toLowerCase() === 'coordenador' ? '/coordenador' : '/aluno')} className="mx-2 text-dark">Home</Nav.Link>
                             <Nav.Link onClick={() => navigate('/registro-aluno')} className="mx-2 text-dark">Registro Alunos</Nav.Link>
                             <Nav.Link onClick={() => navigate('/registro-tutores')} className="mx-2 text-dark fw-bold">Registro Tutores</Nav.Link>
                             <Nav.Link onClick={() => navigate('/predefinicoes')} className="mx-2 text-dark">Predefinições</Nav.Link>

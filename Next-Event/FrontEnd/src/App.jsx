@@ -12,11 +12,9 @@ import Contato from './pages/Contato';
 import HomeAluno from './pages/HomeAluno';
 import MeusCertificados from './pages/MeusCertificados';
 import AvaliacaoTutoria from './pages/AvaliacaoTutoria';
-import Teste from './pages/teste';
 import EditarPerfil from './pages/EditarPerfil';
 
 // Telas do bolsista
-import HomeBolsista from './pages/HomeBolsista';
 import RegistroAluno from './pages/RegistroAluno';
 import RegistroTutores from './pages/RegistroTutores';
 import ValidarCertificados from './pages/ValidarCertificados';
@@ -44,7 +42,6 @@ function App() {
       <Route path="/redefinir-senha" element={<RedefinirSenha />} />
       <Route path="/verificar-codigo" element={<VerificarCodigo />} />
       <Route path="/contato" element={<Contato />} />
-      {/* <Route path="/teste" element={<Teste />} /> */}
 
       <Route path="/aluno" element={<HomeAluno />} />
 
@@ -52,7 +49,6 @@ function App() {
       <Route path="/avaliacao-tutoria" element={<AvaliacaoTutoria />} />
       {/* <Route path="/editar-perfil" element={<EditarPerfil />} /> */}
 
-      <Route path="/bolsista" element={<HomeBolsista />} />
       <Route path="/registro-aluno" element={<RegistroAluno />} />
       <Route path="/registro-tutores" element={<RegistroTutores />} />
       <Route path="/relatorio-individual-tutor" element={<RelatorioIndividualTutor />} />
